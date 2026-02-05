@@ -1,0 +1,91 @@
+import { Sidebar } from "@/components/Sidebar";
+import { PageHeader } from "@/components/PageHeader";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useClients } from "@/hooks/use-clients";
+import { Users, FileText, ArrowUpRight, Plus, ExternalLink } from "lucide-react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+
+export default function Dashboard() {
+  const { data: clients } = useClients();
+
+  const stats = [
+    { label: "Total Clients", value: clients?.length || 0, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Active Briefs", value: "12", icon: FileText, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Pending Approvals", value: "4", icon: ArrowUpRight, color: "text-amber-500", bg: "bg-amber-500/10" },
+  ];
+
+  return (
+    <div className="flex min-h-screen bg-muted/20">
+      <Sidebar />
+      <main className="flex-1 ml-64 p-8">
+        <PageHeader 
+          title="Dashboard" 
+          description="Overview of your content operations."
+        >
+          <Link href="/clients">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              New Client
+            </Button>
+          </Link>
+        </PageHeader>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {stats.map((stat, i) => (
+            <Card key={i} className="card-hover border-border/50">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                  <p className="text-3xl font-display font-bold mt-2">{stat.value}</p>
+                </div>
+                <div className={`p-3 rounded-xl ${stat.bg}`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Recent Clients Section */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-display font-bold">Recent Clients</h2>
+            <Link href="/clients" className="text-sm text-primary hover:underline font-medium flex items-center gap-1">
+              View All <ExternalLink className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {clients?.slice(0, 3).map((client) => (
+              <Link key={client.id} href={`/clients/${client.id}`}>
+                <Card className="card-hover cursor-pointer h-full border-border/50 hover:border-primary/50 transition-colors">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="truncate">{client.name}</span>
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {client.niche || "No niche defined"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="w-4 h-4" />
+                      <span>{client.targetAudience || "General audience"}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+            {(!clients || clients.length === 0) && (
+              <div className="col-span-full py-12 text-center bg-card rounded-xl border border-dashed">
+                <p className="text-muted-foreground">No clients yet. Add your first one to get started.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
