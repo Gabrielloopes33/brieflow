@@ -1,0 +1,51 @@
+Excelente decisão! Documentação é crucial para manter consistência, especialmente com múltiplos agentes IA trabalhando no projeto.
+
+## 📎 Como Enviar Referências Visuais
+
+Você tem algumas opções:
+
+1. **Descrever em texto** - Me conte como é o layout, cores, componentes que gosta
+2. **URLs de referência** - Links de apps como ClickUp, Notion, Linear, ou outros dashboards
+3. **Caminho de arquivos locais** - Se tiver imagens na sua máquina, me passa o caminho absoluto (ex: `C:\Users\...\referencia.png`)
+4. **Descrever funcionalidades** - "Quero algo parecido com o Trello mas com cards maiores..."
+
+---
+
+## 📚 Estrutura de Documentação Proposta
+
+Vou criar uma pasta `/docs` com:
+
+```
+docs/
+├── 01-visao-geral.md           # Conceito, dor, solução
+├── 02-arquitetura.md           # Stack, fluxo de dados, diagramas
+├── 03-api-reference.md         # Todas as rotas, payloads, responses
+├── 04-database-schema.md       # Tabelas, relacionamentos, índices
+├── 05-frontend-guide.md        # Componentes, páginas, fluxos UX
+├── 06-ai-prompts.md            # Todos os prompts usados com Claude
+├── 07-n8n-workflows.md         # Documentação dos workflows
+├── 08-setup-dev.md             # Como rodar localmente
+└── references/                 # Suas referências visuais
+    ├── ui-inspirations.md
+    └── screenshots/
+```
+
+---
+
+## ❓ Perguntas para Personalizar
+
+1. **Referências visuais**: Qual app/dashboard você gosta da interface? (ClickUp, Notion, Linear, Figma, outros?)
+
+2. **Tom de voz**: A documentação deve ser:
+   - [ ] Técnica e direta (pra devs experientes)
+   - [ ] Didática com exemplos (pra facilitar entendimento)
+   - [ ] Bilingue (PT + EN) ou só PT?
+
+3. **Prioridade**: Quer começar documentando:
+   - [ ] A visão geral e arquitetura primeiro?
+   - [ ] As referências visuais e design system?
+   - [ ] As rotas de API em detalhes?
+
+4. **Tem algum arquivo de referência local** que posso ler? Se sim, me passa o caminho!
+
+Assim que você responder, crio a estrutura completa de documentação. 🚀

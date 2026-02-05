@@ -1,0 +1,237 @@
+## 📋 Plano BriefFlow - MVP de Geração de Conteúdo com Fontes Reais
+
+### 🎯 Escopo do MVP
+
+**Fluxo principal:**
+```
+Cadastro Cliente → Cadastro Fontes (blogs) → Scraper Diário → 
+Análise Claude → Geração de Pautas → Visualização/Edição
+```
+
+---
+
+### 📁 Estrutura de Pastas
+
+```
+briefflow/
+├── apps/
+│   ├── web/                          # Next.js 14 (App Router)
+│   │   ├── app/
+│   │   │   ├── (dashboard)/
+│   │   │   │   ├── clientes/         # CRUD clientes
+│   │   │   │   ├── fontes/           # CRUD fontes por cliente
+│   │   │   │   └── pautas/           # Lista e edição de pautas
+│   │   │   └── api/                  # API routes internos
+│   │   ├── components/
+│   │   ├── lib/
+│   │   └── package.json
+│   │
+│   └── desktop/                      # Electron app
+│       ├── electron/
+│       │   ├── main.js               # Entry point Electron
+│       │   └── preload.js            # Context bridge
+│       └── package.json
+│
+├── backend/                          # FastAPI
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── v1/
+│   │   │   │   ├── endpoints/
+│   │   │   │   │   ├── clients.py    # /clients
+│   │   │   │   │   ├── sources.py    # /sources
+│   │   │   │   │   ├── contents.py   # /contents (artigos coletados)
+│   │   │   │   │   └── briefs.py     # /briefs (pautas geradas)
+│   │   │   │   └── api.py
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   └── database.py           # Supabase client
+│   │   ├── models/                   # Pydantic schemas
+│   │   └── main.py
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── workers/                          # Scripts Python + N8N
+│   ├── scraper/
+│   │   ├── spiders/
+│   │   │   ├── blog_spider.py        # Scraper genérico de blogs
+│   │   │   └── parsers/
+│   │   ├── utils/
+│   │   └── run.py                    # Entry point
+│   ├── analyzer/                     # Módulo Claude API
+│   │   ├── analyzer.py               # Análise de conteúdo
+│   │   ├── prompt_templates/         # Prompts para Claude
+│   │   └── brief_generator.py        # Geração de pautas
+│   └── n8n/
+│       └── workflows/                # Export JSON dos workflows
+│
+└── packages/
+    └── shared-types/                 # Types compartilhados (TS/Python)
+```
+
+---
+
+### 🗄️ Schema Supabase
+
+```sql
+-- Clientes (agência pode ter vários)
+CREATE TABLE clients (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  description TEXT,
+  niche TEXT,                        -- nicho (ex: "marketing digital")
+  target_audience TEXT,              -- público-alvo
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Fontes (blogs/sites por cliente)
+CREATE TABLE sources (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,                -- "Blog Neil Patel"
+  url TEXT NOT NULL,                 -- https://neilpatel.com/blog
+  type TEXT DEFAULT 'blog',          -- blog, youtube, news
+  is_active BOOLEAN DEFAULT true,
+  last_scraped_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Conteúdos coletados (artigos/posts)
+CREATE TABLE contents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_id UUID REFERENCES sources(id) ON DELETE CASCADE,
+  client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL UNIQUE,
+  content_text TEXT,                 -- texto limpo do artigo
+  summary TEXT,                      -- resumo gerado
+  topics JSONB,                      -- ["SEO", "Marketing de Conteúdo"]
+  published_at TIMESTAMPTZ,
+  scraped_at TIMESTAMPTZ DEFAULT NOW(),
+  is_analyzed BOOLEAN DEFAULT false
+);
+
+-- Pautas/Briefs gerados
+CREATE TABLE briefs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+  content_ids UUID[],                -- referências aos conteúdos usados
+  title TEXT NOT NULL,               -- título da pauta
+  angle TEXT,                        -- ângulo/tese central
+  key_points TEXT[],                 -- pontos principais
+  content_type TEXT,                 -- post, carrossel, vídeo, etc
+  suggested_copy TEXT,               -- copy sugerida
+  status TEXT DEFAULT 'draft',       -- draft, approved, rejected
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  generated_by TEXT DEFAULT 'claude' -- claude, manual
+);
+
+-- Configurações de análise por cliente
+CREATE TABLE analysis_configs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+  min_content_length INT DEFAULT 500,
+  topics_of_interest TEXT[],         -- tópicos específicos pra focar
+  exclude_patterns TEXT[],           -- padrões a excluir
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+### 🔧 Stack Técnica Detalhada
+
+| Camada | Tecnologia | Justificativa |
+|--------|-----------|---------------|
+| **Frontend** | Next.js 14 + App Router | SSR, API routes, otimizado pra Electron |
+| **UI** | Shadcn/UI + Tailwind | Componentes prontos, consistente |
+| **Desktop** | Electron 28+ | App nativo Windows/Mac, auto-update |
+| **Backend** | FastAPI | Async nativo, Pydantic, OpenAPI auto |
+| **Banco** | Supabase (Postgres) | Auth, realtime, SDK fácil |
+| **Scraping** | Scrapy + Playwright | Blogs estáticos e dinâmicos (JS) |
+| **IA** | Claude API (Anthropic) | Melhor análise de conteúdo longo |
+| **Automação** | N8N | Orquestração visual de workflows |
+| **Fila** | Redis + Celery (opcional) | Jobs assíncronos pesados |
+
+---
+
+### 🔄 Fluxo de Dados
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  N8N Workflow (Schedule: Diário 6h)                             │
+│  1. Busca sources ativos no banco                               │
+│  2. Para cada source:                                           │
+│     ├─ Chama scraper Python (/scrape)                          │
+│     ├─ Recebe artigos novos                                     │
+│     ├─ Chama Claude para análise (/analyze)                    │
+│     └─ Salva no Supabase (contents)                            │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Quando X conteúdos novos coletados:                           │
+│  1. Agrupa por tema/similaridade                               │
+│  2. Chama Claude para gerar pautas (/generate-briefs)          │
+│  3. Salva briefs no banco                                      │
+│  4. Notifica desktop app (Electron IPC)                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 📅 Roadmap de Implementação (6-8 semanas)
+
+#### **Fase 1: Fundação (Semanas 1-2)**
+- [ ] Setup monorepo (Turborepo ou simples)
+- [ ] Configurar Supabase (projeto + tabelas)
+- [ ] Criar API FastAPI básica (health check, auth)
+- [ ] Setup Next.js + Shadcn/UI
+- [ ] Conectar frontend com Supabase auth
+
+#### **Fase 2: Core de Dados (Semanas 2-3)**
+- [ ] CRUD Clientes (UI + API)
+- [ ] CRUD Fontes por cliente
+- [ ] Scraper Python básico (1 blog de teste)
+- [ ] Salvar conteúdos no banco
+- [ ] Testar fluxo: cadastrar fonte → scraper → banco
+
+#### **Fase 3: Inteligência (Semanas 3-5)**
+- [ ] Integrar Claude API
+- [ ] Criar prompts de análise de conteúdo
+- [ ] Gerador de pautas (primeira versão)
+- [ ] Salvar briefs no banco
+- [ ] Interface de visualização de pautas
+
+#### **Fase 4: Automação (Semana 5-6)**
+- [ ] Criar workflow N8N (coleta diária)
+- [ ] Conectar N8N com scraper Python (HTTP)
+- [ ] Conectar N8N com Claude (HTTP)
+- [ ] Testar fluxo completo end-to-end
+- [ ] Ajustar prompts baseado em resultados
+
+#### **Fase 5: Desktop (Semanas 6-7)**
+- [ ] Configurar Electron
+- [ ] Empacotar Next.js no Electron
+- [ ] Sistema de notificações desktop
+- [ ] Auto-update configurado
+- [ ] Build para Windows (primeiro)
+
+#### **Fase 6: Polish (Semana 7-8)**
+- [ ] Testes com dados reais (blogs de marketing)
+- [ ] Refinar prompts de geração
+- [ ] UI/UX polimento
+- [ ] Documentação básica
+- [ ] Deploy interno na agência
+
+---
+
+### 🚀 Próximos Passos Imediatos
+
+1. **Criar estrutura de pastas** do projeto
+2. **Inicializar Next.js** com Shadcn/UI
+3. **Setup Supabase** (projeto + schema)
+4. **Criar FastAPI** básico
+
+**Quer que eu comece implementando a Fase 1?** Posso criar toda a estrutura inicial (monorepo, Next.js, FastAPI, Supabase schema) em alguns minutos.
+
+Ou prefere ajustar algo no plano primeiro?
