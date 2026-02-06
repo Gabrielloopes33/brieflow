@@ -10,9 +10,9 @@ export default function Dashboard() {
   const { data: clients } = useClients();
 
   const stats = [
-    { label: "Total Clients", value: clients?.length || 0, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Active Briefs", value: "12", icon: FileText, color: "text-purple-500", bg: "bg-purple-500/10" },
-    { label: "Pending Approvals", value: "4", icon: ArrowUpRight, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Total de Clientes", value: clients?.length || 0, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Pautas Ativas", value: "12", icon: FileText, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Aprovações Pendentes", value: "4", icon: ArrowUpRight, color: "text-amber-500", bg: "bg-amber-500/10" },
   ];
 
   return (
@@ -20,13 +20,13 @@ export default function Dashboard() {
       <Sidebar />
       <main className="flex-1 ml-64 p-8">
         <PageHeader 
-          title="Dashboard" 
-          description="Overview of your content operations."
+          title="Painel" 
+          description="Visão geral das suas operações de conteúdo."
         >
           <Link href="/clients">
             <Button>
               <Plus className="w-4 h-4 mr-2" />
-              New Client
+              Novo Cliente
             </Button>
           </Link>
         </PageHeader>
@@ -51,9 +51,9 @@ export default function Dashboard() {
         {/* Recent Clients Section */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-display font-bold">Recent Clients</h2>
+            <h2 className="text-xl font-display font-bold">Clientes Recentes</h2>
             <Link href="/clients" className="text-sm text-primary hover:underline font-medium flex items-center gap-1">
-              View All <ExternalLink className="w-3 h-3" />
+              Ver Todos <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
 
@@ -80,7 +80,7 @@ export default function Dashboard() {
             ))}
             {(!clients || clients.length === 0) && (
               <div className="col-span-full py-12 text-center bg-card rounded-xl border border-dashed">
-                <p className="text-muted-foreground">No clients yet. Add your first one to get started.</p>
+                <p className="text-muted-foreground">Nenhum cliente ainda. Adicione o primeiro para começar.</p>
               </div>
             )}
           </div>

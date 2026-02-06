@@ -8,6 +8,7 @@ import {
   LogOut, 
   Sparkles,
   Search,
+  Globe,
   Settings
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,11 +18,12 @@ export function Sidebar() {
   const { user, logout } = useAuth();
 
   const navItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/clients", icon: Users, label: "Clients" },
-    { href: "/sources", icon: Search, label: "Sources" },
-    { href: "/briefs", icon: FileText, label: "Briefs" },
-    { href: "/settings", icon: Settings, label: "Settings" },
+    { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+    { href: "/clients", icon: Users, label: "Clientes" },
+    { href: "/sources", icon: Search, label: "Fontes" },
+    { href: "/contents", icon: Globe, label: "Conteúdos" },
+    { href: "/briefs", icon: FileText, label: "Pautas" },
+    { href: "/settings", icon: Settings, label: "Configurações" },
   ];
 
   return (
