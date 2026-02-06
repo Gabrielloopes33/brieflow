@@ -23,9 +23,9 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Auth Setup
-  await setupAuth(app);
-  registerAuthRoutes(app);
+  // Auth Setup - comentado para desenvolvimento
+  // await setupAuth(app);
+  // registerAuthRoutes(app);
 
   // Clients
   app.get(api.clients.list.path, async (req, res) => {
