@@ -1,0 +1,107 @@
+{
+  "version": 3,
+  "name": "brielflow",
+  "description": "Content-Generator Application Stack",
+  "services": {
+    "app": {
+      "image": "",
+      "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+      },
+      "container_name": "brielflow-app",
+      "restart": "unless-stopped",
+      "ports": [
+        "5000:5000"
+      ],
+      "environment": [
+        "NODE_ENV=production",
+        "PORT=5000",
+        "DB_HOST=postgres",
+        "DB_PORT=5432",
+        "DB_NAME=${DB_NAME}",
+        "DB_USER=${DB_USER}",
+        "DB_PASSWORD=${DB_PASSWORD}",
+        "JWT_SECRET=${JWT_SECRET}",
+        "SESSION_SECRET=${SESSION_SECRET}",
+        "FRONTEND_URL=${FRONTEND_URL}"
+      ],
+      "volumes": [
+        "app_logs:/app/logs"
+      ],
+      "networks": [
+        "brielflow-network"
+      ],
+      "depends_on": [
+        "postgres"
+      ]
+    },
+    "postgres": {
+      "image": "postgres:15-alpine",
+      "container_name": "brielflow-postgres",
+      "restart": "unless-stopped",
+      "environment": [
+        "POSTGRES_DB=${DB_NAME}",
+        "POSTGRES_USER=${DB_USER}",
+        "POSTGRES_PASSWORD=${DB_PASSWORD}"
+      ],
+      "volumes": [
+        "postgres_data:/var/lib/postgresql/data"
+      ],
+      "networks": [
+        "brielflow-network"
+      ],
+      "ports": [
+        "5432:5432"
+      ]
+    },
+    "nginx": {
+      "image": "nginx:alpine",
+      "container_name": "brielflow-nginx",
+      "restart": "unless-stopped",
+      "ports": [
+        "80:80",
+        "443:443"
+      ],
+      "volumes": [
+        {
+          "bind": "./nginx/nginx.conf",
+          "container": "/etc/nginx/nginx.conf",
+          "readonly": true
+        },
+        "nginx_logs:/var/log/nginx"
+      ],
+      "networks": [
+        "brielflow-network"
+      ],
+      "depends_on": [
+        "app"
+      ]
+    },
+    "redis": {
+      "image": "redis:7-alpine",
+      "container_name": "brielflow-redis",
+      "restart": "unless-stopped",
+      "volumes": [
+        "redis_data:/data"
+      ],
+      "networks": [
+        "brielflow-network"
+      ],
+      "ports": [
+        "6379:6379"
+      ]
+    }
+  },
+  "networks": {
+    "brielflow-network": {
+      "driver": "bridge"
+    }
+  },
+  "volumes": {
+    "postgres_data": {},
+    "redis_data": {},
+    "app_logs": {},
+    "nginx_logs": {}
+  }
+}
