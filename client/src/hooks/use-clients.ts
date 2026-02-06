@@ -4,13 +4,19 @@ import { type InsertClient, type Client } from "@shared/schema";
 import { useToast } from "./use-toast";
 
 export function useClients() {
-  return useQuery({
+  return useQuery<Client[]>({
     queryKey: [api.clients.list.path],
     queryFn: async () => {
       const res = await fetch(api.clients.list.path, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch clients");
-      return api.clients.list.responses[200].parse(await res.json());
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: "Unknown error" }));
+        throw new Error(error.message || "Failed to fetch clients");
+      }
+      const data = await res.json();
+      // Garantir que retorna um array
+      return Array.isArray(data) ? data : [];
     },
+    initialData: [],
   });
 }
 

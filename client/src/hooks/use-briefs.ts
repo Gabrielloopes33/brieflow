@@ -1,19 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
-import { type InsertBrief } from "@shared/schema";
+import { type InsertBrief, type Brief } from "@shared/schema";
 import { useToast } from "./use-toast";
 
 export function useBriefs(clientId: string) {
-  return useQuery({
+  return useQuery<Brief[]>({
     queryKey: [api.briefs.list.path, clientId],
     queryFn: async () => {
       if (!clientId) return [];
       const url = buildUrl(api.briefs.list.path, { clientId });
       const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch briefs");
-      return api.briefs.list.responses[200].parse(await res.json());
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: "Unknown error" }));
+        throw new Error(error.message || "Failed to fetch briefs");
+      }
+      const data = await res.json();
+      // Garantir que retorna um array
+      return Array.isArray(data) ? data : [];
     },
     enabled: !!clientId,
+    initialData: [],
   });
 }
 
