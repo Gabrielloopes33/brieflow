@@ -1,16 +1,17 @@
 # BriefFlow - Docker Compose para Portainer
 # Este arquivo é otimizado para deploy via Portainer CE
-# Versão: 1.0.0
+# Versão: 2.0.0 - Compatível com Swarm e Standalone
 
 version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: brielflow-app
-    restart: unless-stopped
+    image: node:18-alpine
+    command: >
+      sh -c "cd /app && 
+             npm ci --production && 
+             npm run build && 
+             npm run start:production"
     ports:
       - "5000:5000"
     environment:
@@ -25,7 +26,9 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:-your-session-secret-change-this}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
     volumes:
+      - .:/app:ro
       - app_logs:/app/logs
+      - /app/node_modules
     networks:
       - brielflow-network
     depends_on:
@@ -39,8 +42,6 @@ services:
 
   postgres:
     image: postgres:15-alpine
-    container_name: brielflow-postgres
-    restart: unless-stopped
     environment:
       - POSTGRES_DB=${DB_NAME:-brielflow}
       - POSTGRES_USER=${DB_USER:-postgres}
@@ -48,6 +49,7 @@ services:
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
       - brielflow-network
     healthcheck:
@@ -60,8 +62,6 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: brielflow-nginx
-    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
@@ -80,8 +80,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: brielflow-redis
-    restart: unless-stopped
     volumes:
       - redis_data:/data
     networks:
