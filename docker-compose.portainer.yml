@@ -23,7 +23,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
     volumes:
       - type: bind
-        source: .
+        source: /opt/brieflow
         target: /app
       - app_logs:/app/logs
       - /app/node_modules
@@ -31,6 +31,10 @@ services:
       - postgres
     deploy:
       replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
 
   postgres:
     image: postgres:15-alpine
@@ -38,19 +42,16 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_INITDB_ARGS: --encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - type: bind
-        source: ./init-db.sql
-        target: /docker-entrypoint-initdb.d/init-db.sql
-        read_only: true
     ports:
       - target: 5432
         published: 5432
         mode: host
     deploy:
       replicas: 1
+      restart_policy:
+        condition: on-failure
 
   nginx:
     image: nginx:alpine
@@ -58,12 +59,9 @@ services:
       - target: 80
         published: 80
         mode: host
-      - target: 443
-        published: 443
-        mode: host
     volumes:
       - type: bind
-        source: ./nginx/nginx.conf
+        source: /opt/brieflow/nginx/nginx.conf
         target: /etc/nginx/nginx.conf
         read_only: true
       - nginx_logs:/var/log/nginx
@@ -71,6 +69,8 @@ services:
       - app
     deploy:
       replicas: 1
+      restart_policy:
+        condition: on-failure
 
   redis:
     image: redis:7-alpine
@@ -82,6 +82,8 @@ services:
         mode: host
     deploy:
       replicas: 1
+      restart_policy:
+        condition: on-failure
 
 volumes:
   postgres_data:
