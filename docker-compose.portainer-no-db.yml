@@ -76,7 +76,6 @@ networks:
   brieflow-network:
     driver: overlay
     attachable: true
-    external: false
 
 volumes:
   redis_data:
