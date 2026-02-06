@@ -2,9 +2,44 @@ import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, CheckCircle2 } from "lucide-react";
+import { useEffect } from "react";
 
 export default function Landing() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, refetch } = useAuth();
+
+  useEffect(() => {
+    // Check if login was successful
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login') === 'success') {
+      // Clear the URL parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Wait a bit then refetch user data
+      setTimeout(() => {
+        refetch();
+      }, 100);
+    }
+  }, [refetch]);
+
+  // Show loading when checking auth
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/user', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          refetch();
+        }
+      } catch (error) {
+        // User not authenticated, continue showing landing
+      }
+    };
+    
+    // Check immediately and then every few seconds
+    checkAuth();
+    const interval = setInterval(checkAuth, 2000);
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   if (isLoading) return null;
   if (user) return <Redirect to="/dashboard" />;
@@ -20,33 +55,33 @@ export default function Landing() {
         <div className="relative z-10 max-w-xl mx-auto lg:mx-0">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium mb-8 border border-white/10">
             <Sparkles className="w-4 h-4 text-primary-foreground" />
-            <span>AI-Powered Content Strategy</span>
+            <span>Estratégia de Conteúdo com IA</span>
           </div>
           
           <h1 className="font-display font-bold text-4xl lg:text-6xl leading-tight mb-6">
-            Automated Content Briefs from your Sources
+            Pautas Automatizadas a partir de suas Fontes
           </h1>
           
           <p className="text-lg text-slate-300 mb-8 leading-relaxed">
-            Streamline your content workflow. Collect sources, analyze topics, and generate high-quality briefs in seconds with BriefFlow.
+            Otimize seu fluxo de conteúdo. Colete fontes, analise tópicos e gere pautas de alta qualidade em segundos com BriefFlow.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-slate-300">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span>Intelligent Source Scraping</span>
+              <span>Coleta Inteligente de Fontes</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span>Auto-Generated Briefs</span>
+              <span>Pautas Geradas Automaticamente</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span>Multi-Client Management</span>
+              <span>Gestão Multi-cliente</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span>Topic Analysis</span>
+              <span>Análise de Tópicos</span>
             </div>
           </div>
         </div>
@@ -59,9 +94,9 @@ export default function Landing() {
             <div className="inline-block p-3 bg-primary/10 rounded-xl mb-4">
               <Zap className="w-8 h-8 text-primary" />
             </div>
-            <h2 className="font-display font-bold text-3xl text-foreground">Welcome Back</h2>
+            <h2 className="font-display font-bold text-3xl text-foreground">Bem-vindo de Volta</h2>
             <p className="mt-2 text-muted-foreground">
-              Sign in to manage your clients and content
+              Entre para gerenciar seus clientes e conteúdo
             </p>
           </div>
 
@@ -71,12 +106,12 @@ export default function Landing() {
               className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
               onClick={() => window.location.href = "/api/login"}
             >
-              Sign in with Replit
+              Fazer Login Demo
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
             
             <p className="text-xs text-center text-muted-foreground mt-8">
-              By signing in, you agree to our Terms of Service and Privacy Policy.
+              Ao entrar, você concorda com nossos Termos de Serviço e Política de Privacidade.
             </p>
           </div>
         </div>

@@ -1,69 +1,65 @@
-import { pgTable, text, serial, integer, boolean, timestamp, uuid, jsonb } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, boolean, timestamp, uuid } from "drizzle-orm/sqlite-core";
+import { pgTable, text as pgText, serial, integer as pgInteger, boolean as pgBoolean, timestamp as pgTimestamp, uuid as pgUuid, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Export Auth Models
-export * from "./models/auth";
-
-// === TABLE DEFINITIONS ===
-
-export const clients = pgTable("clients", {
-  id: uuid("id").primaryKey().defaultRandom(),
+// Database agnostic table exports
+export const clients = sqliteTable("clients", {
+  id: text("id").primaryKey().$default(() => crypto.randomUUID()),
   name: text("name").notNull(),
   description: text("description"),
   niche: text("niche"),
   targetAudience: text("target_audience"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
 });
 
-export const sources = pgTable("sources", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  clientId: uuid("client_id").references(() => clients.id, { onDelete: 'cascade' }).notNull(),
+export const sources = sqliteTable("sources", {
+  id: text("id").primaryKey().$default(() => crypto.randomUUID()),
+  clientId: text("client_id").notNull().references(() => clients.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   url: text("url").notNull(),
   type: text("type").default('blog').notNull(), // blog, youtube, news
-  isActive: boolean("is_active").default(true).notNull(),
-  lastScrapedAt: timestamp("last_scraped_at"),
-  createdAt: timestamp("created_at").defaultNow(),
+  isActive: integer("is_active", { mode: "boolean" }).default(true).notNull(),
+  lastScrapedAt: integer("last_scraped_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
 });
 
-export const contents = pgTable("contents", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  sourceId: uuid("source_id").references(() => sources.id, { onDelete: 'cascade' }).notNull(),
-  clientId: uuid("client_id").references(() => clients.id, { onDelete: 'cascade' }).notNull(),
+export const contents = sqliteTable("contents", {
+  id: text("id").primaryKey().$default(() => crypto.randomUUID()),
+  sourceId: text("source_id").notNull().references(() => sources.id, { onDelete: 'cascade' }),
+  clientId: text("client_id").notNull().references(() => clients.id, { onDelete: 'cascade' }),
   title: text("title").notNull(),
-  url: text("url").notNull().unique(),
+  url: text("url").notNull(),
   contentText: text("content_text"),
   summary: text("summary"),
-  topics: jsonb("topics").$type<string[]>(),
-  publishedAt: timestamp("published_at"),
-  scrapedAt: timestamp("scraped_at").defaultNow(),
-  isAnalyzed: boolean("is_analyzed").default(false).notNull(),
+  topics: text("topics", { mode: "json" }), // JSON for SQLite
+  publishedAt: integer("published_at", { mode: "timestamp" }),
+  scrapedAt: integer("scraped_at", { mode: "timestamp" }).$default(() => Date.now()),
+  isAnalyzed: integer("is_analyzed", { mode: "boolean" }).default(false).notNull(),
 });
 
-export const briefs = pgTable("briefs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  clientId: uuid("client_id").references(() => clients.id, { onDelete: 'cascade' }).notNull(),
-  contentIds: uuid("content_ids").array(), // Array of content IDs used
+export const briefs = sqliteTable("briefs", {
+  id: text("id").primaryKey().$default(() => crypto.randomUUID()),
+  clientId: text("client_id").notNull().references(() => clients.id, { onDelete: 'cascade' }),
+  contentIds: text("content_ids", { mode: "json" }), // JSON array for SQLite
   title: text("title").notNull(),
   angle: text("angle"),
-  keyPoints: text("key_points").array(),
+  keyPoints: text("key_points", { mode: "json" }), // JSON array for SQLite
   contentType: text("content_type"),
   suggestedCopy: text("suggested_copy"),
   status: text("status").default('draft').notNull(), // draft, approved, rejected
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
   generatedBy: text("generated_by").default('claude'),
 });
 
-export const analysisConfigs = pgTable("analysis_configs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  clientId: uuid("client_id").references(() => clients.id, { onDelete: 'cascade' }).notNull(),
+export const analysisConfigs = sqliteTable("analysis_configs", {
+  id: text("id").primaryKey().$default(() => crypto.randomUUID()),
+  clientId: text("client_id").notNull().references(() => clients.id, { onDelete: 'cascade' }),
   minContentLength: integer("min_content_length").default(500),
-  topicsOfInterest: text("topics_of_interest").array(),
-  excludePatterns: text("exclude_patterns").array(),
-  createdAt: timestamp("created_at").defaultNow(),
+  topicsOfInterest: text("topics_of_interest", { mode: "json" }), // JSON array for SQLite
+  excludePatterns: text("exclude_patterns", { mode: "json" }), // JSON array for SQLite
+  createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
 });
-
 
 // === SCHEMAS ===
 

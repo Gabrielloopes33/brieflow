@@ -28,8 +28,8 @@ export default function Clients() {
       <Sidebar />
       <main className="flex-1 ml-64 p-8">
         <PageHeader 
-          title="Clients" 
-          description="Manage your client roster and their configurations."
+          title="Clientes" 
+          description="Gerencie sua lista de clientes e suas configurações."
         >
           <CreateClientDialog open={open} onOpenChange={setOpen} />
         </PageHeader>
@@ -38,7 +38,7 @@ export default function Clients() {
         <div className="mb-8 max-w-md relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
-            placeholder="Search clients..." 
+            placeholder="Pesquisar clientes..." 
             className="pl-10 bg-card"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -63,7 +63,7 @@ export default function Clients() {
                     </div>
                     <CardTitle className="text-xl">{client.name}</CardTitle>
                     <CardDescription className="line-clamp-2 min-h-[40px]">
-                      {client.description || "No description provided."}
+                      {client.description || "Nenhuma descrição fornecida."}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -109,13 +109,13 @@ function CreateClientDialog({ open, onOpenChange }: { open: boolean; onOpenChang
       <DialogTrigger asChild>
         <Button className="shadow-lg shadow-primary/20">
           <Plus className="w-4 h-4 mr-2" />
-          Add Client
+          Adicionar Cliente
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Client</DialogTitle>
-          <DialogDescription>Create a workspace for a new client.</DialogDescription>
+          <DialogTitle>Adicionar Novo Cliente</DialogTitle>
+          <DialogDescription>Crie uma área de trabalho para um novo cliente.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -124,7 +124,7 @@ function CreateClientDialog({ open, onOpenChange }: { open: boolean; onOpenChang
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client Name</FormLabel>
+                  <FormLabel>Nome do Cliente</FormLabel>
                   <FormControl>
                     <Input placeholder="Acme Corp" {...field} />
                   </FormControl>
@@ -137,7 +137,7 @@ function CreateClientDialog({ open, onOpenChange }: { open: boolean; onOpenChang
               name="niche"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Niche / Industry</FormLabel>
+                  <FormLabel>Nicho / Setor</FormLabel>
                   <FormControl>
                     <Input placeholder="SaaS, E-commerce, etc." {...field} value={field.value || ""} />
                   </FormControl>
@@ -150,7 +150,7 @@ function CreateClientDialog({ open, onOpenChange }: { open: boolean; onOpenChang
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Descrição</FormLabel>
                   <FormControl>
                     <Input placeholder="Brief description..." {...field} value={field.value || ""} />
                   </FormControl>
@@ -160,7 +160,7 @@ function CreateClientDialog({ open, onOpenChange }: { open: boolean; onOpenChang
             />
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Create Client
+              Criar Cliente
             </Button>
           </form>
         </Form>

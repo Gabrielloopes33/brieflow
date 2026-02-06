@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
+import Sources from "@/pages/Sources";
+import Contents from "@/pages/Contents";
+import Briefs from "@/pages/Briefs";
 import ClientDetails from "@/pages/ClientDetails";
 import BriefDetail from "@/pages/BriefDetail";
 import NotFound from "@/pages/not-found";
@@ -48,9 +51,17 @@ function Router() {
       <Route path="/briefs/:id">
         <ProtectedRoute component={BriefDetail} />
       </Route>
-      <Route path="/sources">
-        {/* For now reuse Clients page but ideally separate view */}
-        <ProtectedRoute component={Dashboard} /> 
+<Route path="/sources">
+        <ProtectedRoute component={Sources} />
+      </Route>
+      <Route path="/contents">
+        <ProtectedRoute component={Contents} />
+      </Route>
+      <Route path="/briefs">
+        <ProtectedRoute component={Briefs} />
+      </Route>
+      <Route path="/briefs/:id">
+        <ProtectedRoute component={BriefDetail} />
       </Route>
       <Route component={NotFound} />
     </Switch>
