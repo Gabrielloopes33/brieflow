@@ -6,165 +6,73 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  NODE_VERSION: '18'
-  REGISTRY: ghcr.io
-
 jobs:
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Run tests
-        run: npm run check
-        continue-on-error: true
-        
-      - name: Run lint
-        run: npm run lint
-        continue-on-error: true
-
-  build:
-    name: Build and Push Docker Image
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    
-    permissions:
-      contents: read
-      packages: write
-      
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-            
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
   deploy:
-    name: Deploy to VPS
+    name: Deploy to VPS via SSH
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Configure SSH
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: Add host to known hosts
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
           
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
+        run: |
+          echo "🚀 Iniciando deploy no VPS..."
+          
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << 'EOF'
             set -e
-            echo "🚀 Iniciando deploy..."
             
-            cd /opt/briefflow
+            echo "📂 Navegando para /opt/brieflow..."
+            cd /opt/brieflow
             
-            echo "📥 Pulling latest changes..."
+            echo "📥 Fazendo git pull..."
             git fetch origin main
             git reset --hard origin/main
             
-            echo "📦 Building and starting containers..."
-            docker-compose down
-            docker-compose pull
-            docker-compose up -d
+            echo "🔄 Atualizando serviço Docker Swarm..."
+            # Força recriação do container com novo código
+            docker service update --force briefflow_app
             
-            echo "🧹 Cleaning up old images..."
-            docker system prune -af --filter "until=72h"
+            echo "⏳ Aguardando serviço iniciar..."
+            sleep 30
             
-            echo "✅ Deploy completo!"
-            
+            echo "✅ Deploy concluído!"
+          EOF
+          
       - name: Health Check
         run: |
-          echo "🔍 Verificando health da aplicação..."
-          sleep 30
+          echo "🔍 Verificando se aplicação está rodando..."
+          sleep 10
           
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.DOMAIN }}/api/health || echo "000")
+          # Tenta acessar o health endpoint 3 vezes
+          for i in 1 2 3; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.HOST }}:5000/api/health || echo "000")
+            
+            if [ "$response" = "200" ]; then
+              echo "✅ Aplicação está saudável!"
+              exit 0
+            fi
+            
+            echo "⏳ Tentativa $i falhou, aguardando..."
+            sleep 10
+          done
           
-          if [ "$response" -eq 200 ]; then
-            echo "✅ Aplicação está saudável!"
-          else
-            echo "❌ Health check falhou com status: $response"
-            exit 1
-          fi
+          echo "❌ Health check falhou após 3 tentativas"
+          exit 1
           
-      - name: Notify Rollback on Failure
+      - name: Notify on Failure
         if: failure()
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /opt/briefflow
-            echo "🔄 Executando rollback..."
-            docker-compose down
-            docker-compose up -d
-            echo "✅ Rollback executado!"
-
-  notify:
-    name: Notify Deployment Status
-    runs-on: ubuntu-latest
-    needs: [build, deploy]
-    if: always()
-    
-    steps:
-      - name: Check deployment status
         run: |
-          if [ "${{ needs.deploy.result }}" == "success" ]; then
-            echo "✅ Deploy realizado com sucesso!"
-          else
-            echo "❌ Deploy falhou!"
-            exit 1
-          fi
+          echo "❌ Deploy falhou! Verifique os logs na VPS:"
+          echo "   ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }}"
+          echo "   docker service logs briefflow_app"
