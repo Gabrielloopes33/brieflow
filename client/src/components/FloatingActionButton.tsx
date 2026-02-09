@@ -9,11 +9,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useHaptics } from '@/hooks/use-haptics';
 
-type FabAction = 'brief' | 'source' | 'client' | 'content';
+type FabActionType = 'brief' | 'source' | 'client' | 'content';
 
 interface FabAction {
-  id: FabAction;
+  id: FabActionType;
   icon: typeof FileText;
   label: string;
   color: string;
@@ -28,18 +29,20 @@ const actions: FabAction[] = [
 
 interface FloatingActionButtonProps {
   clientId?: string;
-  onAction: (action: FabAction) => void;
+  onAction: (action: FabActionType) => void;
   trigger?: React.ReactNode;
 }
 
 export function FloatingActionButton({ clientId, onAction, trigger }: FloatingActionButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { triggerHaptic } = useHaptics();
 
-  const handleAction = (action: FabAction) => {
+  const handleAction = (action: FabActionType) => {
     if (!clientId && action === 'source') {
-      // Se não tem cliente selecionado, não permite criar fonte
+      triggerHaptic('error');
       return;
     }
+    triggerHaptic('medium');
     onAction(action);
     setIsOpen(false);
   };
