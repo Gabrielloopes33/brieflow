@@ -35,7 +35,7 @@ export function Sidebar() {
 
   return (
     <div className={cn(
-      "h-screen bg-card border-r flex flex-col fixed left-0 top-0 z-20 transition-all duration-300",
+      "hidden md:flex h-screen bg-card border-r flex flex-col fixed left-0 top-0 z-20 transition-all duration-300",
       isDesktop ? "w-64" : "w-16"
     )}>
       {/* Brand */}

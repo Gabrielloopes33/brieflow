@@ -118,11 +118,13 @@ interface NavButtonProps {
 
 function NavButton({ item, isActive }: NavButtonProps) {
   const Icon = item.icon;
+  const { triggerHaptic } = useHaptics();
 
   return (
     <Link href={item.path}>
       <motion.div
         whileTap={{ scale: 0.92 }}
+        onClick={() => triggerHaptic('light')}
         className={cn(
           "relative flex flex-col items-center justify-center w-full h-full py-2 transition-colors",
           isActive
