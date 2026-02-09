@@ -128,11 +128,53 @@ docker logs -f briefflow-postgres
 
 ### Atualizar Aplicação
 
+#### OPÇÃO 1: Via Portainer (RECOMENDADO)
+
+1. Acesse seu Portainer: `http://sua-vps:9000`
+2. Procure a stack **"brielflow"**
+3. Clique em **Editor** da stack
+4. Clique em **"Update & Restart"** ou **"Redeploy"**
+
+Isso fará automaticamente:
+- ✅ Pull do código
+- ✅ Rebuild da imagem
+- ✅ Restart do container
+
+#### OPÇÃO 2: Via Script Automatizado (Na VPS)
+
 ```bash
-git pull origin main
+cd /opt/brieflow
+chmod +x deploy.sh
+
+# Atualiza código + rebuild + restart
+./deploy.sh update
+
+# Apenas restart (sem atualizar código)
+./deploy.sh restart
+
+# Ver logs em tempo real
+./deploy.sh logs
+```
+
+#### OPÇÃO 3: Manual (Na VPS)
+
+```bash
+cd /opt/brieflow
+
+# 1. Pull do código
+git pull github main
+
+# 2. Parar containers
 docker-compose down
-docker-compose build --no-cache
+
+# 3. Rebuild (IMPORTANTE - força rebuild da imagem)
+docker-compose build --no-cache app
+
+# 4. Subir novamente
 docker-compose up -d
+
+# 5. Verificar logs
+docker logs -f brielflow-app
 ```
 
 ## Monitoramento
