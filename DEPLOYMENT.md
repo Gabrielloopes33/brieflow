@@ -128,7 +128,7 @@ docker logs -f briefflow-postgres
 
 ### Atualizar Aplicação
 
-#### OPÇÃO 1: Via Portainer (RECOMENDADO)
+#### OPÇÃO 1: Via Portainer (RECOMENDADO) ⭐
 
 1. Acesse seu Portainer: `http://sua-vps:9000`
 2. Procure a stack **"brielflow"**
@@ -140,23 +140,26 @@ Isso fará automaticamente:
 - ✅ Rebuild da imagem
 - ✅ Restart do container
 
-#### OPÇÃO 2: Via Script Automatizado (Na VPS)
+#### OPÇÃO 2: Via Script Automatizado (Na VPS) ⭐
 
 ```bash
 cd /opt/brieflow
-chmod +x deploy.sh
+chmod +x vps-deploy.sh
 
-# Atualiza código + rebuild + restart
-./deploy.sh update
+# Deploy completo (stop + pull + clean + install + build + start)
+./vps-deploy.sh all
 
-# Apenas restart (sem atualizar código)
-./deploy.sh restart
+# Apenas atualizar código (pull + stop + start)
+./vps-deploy.sh code
 
-# Ver logs em tempo real
-./deploy.sh logs
+# Apenas reiniciar containers
+./vps-deploy.sh restart
+
+# Ver logs em tempo real (Ctrl+C para sair)
+./vps-deploy.sh logs
 ```
 
-#### OPÇÃO 3: Manual (Na VPS)
+#### OPÇÃO 3: Manual (Na VPS) - NÃO RECOMENDADO
 
 ```bash
 cd /opt/brieflow
@@ -167,13 +170,20 @@ git pull github main
 # 2. Parar containers
 docker-compose down
 
-# 3. Rebuild (IMPORTANTE - força rebuild da imagem)
-docker-compose build --no-cache app
+# 3. Limpando build antigo (IMPORTANTE)
+rm -rf dist
 
-# 4. Subir novamente
-docker-compose up -d
+# 4. Install dependencies
+cp /opt/brieflow/package*.json ./
+npm install --include=dev
 
-# 5. Verificar logs
+# 5. Build do projeto (production)
+npx tsx script/build.ts
+
+# 6. Subir novamente
+npx tsx server/production-server.ts
+
+# 7. Verificar logs
 docker logs -f brielflow-app
 ```
 
