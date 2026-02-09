@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { SwipeableCard } from "@/components/SwipeableCard";
 import { useSources, useCreateSource, useDeleteSource } from "@/hooks/use-sources";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Globe, Trash2, ExternalLink, Rss, Newspaper, Loader2 } from "lucide-react";
+import { Plus, Globe, ExternalLink, Rss, Newspaper, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,7 +17,7 @@ import { z } from "zod";
 const sourceSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   url: z.string().url("URL inválida"),
-  type: z.enum(["RSS", "BLOG", "NEWS"]),
+  type: z.enum(["rss", "blog", "news"]),
 });
 
 type SourceFormData = z.infer<typeof sourceSchema>;
@@ -54,11 +55,11 @@ export function SourcesTab({ clientId }: SourcesTabProps) {
 
   const getSourceIcon = (type: string) => {
     switch (type) {
-      case "RSS":
+      case "rss":
         return <Rss className="w-4 h-4" />;
-      case "BLOG":
+      case "blog":
         return <Globe className="w-4 h-4" />;
-      case "NEWS":
+      case "news":
         return <Newspaper className="w-4 h-4" />;
       default:
         return <Globe className="w-4 h-4" />;
@@ -67,11 +68,11 @@ export function SourcesTab({ clientId }: SourcesTabProps) {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "RSS":
+      case "rss":
         return "bg-orange-500/10 text-orange-500 border-orange-500/20";
-      case "BLOG":
+      case "blog":
         return "bg-blue-500/10 text-blue-500 border-blue-500/20";
-      case "NEWS":
+      case "news":
         return "bg-purple-500/10 text-purple-500 border-purple-500/20";
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20";
@@ -141,9 +142,9 @@ export function SourcesTab({ clientId }: SourcesTabProps) {
                     <SelectValue placeholder="Selecione o tipo da fonte" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="RSS">RSS Feed</SelectItem>
-                    <SelectItem value="BLOG">Blog</SelectItem>
-                    <SelectItem value="NEWS">News Site</SelectItem>
+                    <SelectItem value="rss">RSS Feed</SelectItem>
+                    <SelectItem value="blog">Blog</SelectItem>
+                    <SelectItem value="news">News Site</SelectItem>
                   </SelectContent>
                 </Select>
                 {form.formState.errors.type && (
@@ -161,45 +162,43 @@ export function SourcesTab({ clientId }: SourcesTabProps) {
       {sources && sources.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sources.map((source) => (
-            <Card key={source.id} className="card-hover border-border/50">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    {getSourceIcon(source.type)}
-                    <CardTitle className="text-lg">{source.name}</CardTitle>
+            <SwipeableCard
+              key={source.id}
+              onDelete={() => handleDeleteSource(source.id)}
+              className="border-border/50"
+            >
+              <Card className="card-hover border-0 shadow-none">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      {getSourceIcon(source.type)}
+                      <CardTitle className="text-lg">{source.name}</CardTitle>
+                    </div>
+                    <Badge variant="outline" className={getTypeColor(source.type)}>
+                      {source.type}
+                    </Badge>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteSource(source.id)}
-                    disabled={deleteSource.isPending}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </div>
-                <Badge variant="outline" className={getTypeColor(source.type)}>
-                  {source.type}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <a
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    Visit Source
-                  </a>
-                  {source.lastScrapedAt && (
-                    <p className="text-xs text-muted-foreground">
-                      Last scraped: {new Date(source.lastScrapedAt).toLocaleDateString('pt-BR')}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline flex items-center gap-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Visit Source
+                    </a>
+                    {source.lastScrapedAt && (
+                      <p className="text-xs text-muted-foreground">
+                        Last scraped: {new Date(source.lastScrapedAt).toLocaleDateString('pt-BR')}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </SwipeableCard>
           ))}
         </div>
       ) : (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ClientContext, useClientContext } from '@/contexts/ClientContext';
+import { useClientContext } from '@/contexts/ClientContext';
 import { useClient } from '@/hooks/use-clients';
 import { OverviewTab } from './OverviewTab';
 import { PageHeader } from '@/components/PageHeader';
@@ -41,7 +41,7 @@ export function ClientWorkspace({
 
   // Sincroniza tab com URL params
   useEffect(() => {
-    const tabParam = searchParams.tab as WorkspaceTab;
+    const tabParam = searchParams.get('tab') as WorkspaceTab;
     if (tabParam && tabs.find(t => t.id === tabParam)) {
       setActiveTab(tabParam);
     }

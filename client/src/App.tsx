@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClientProvider, useClientContext } from "@/contexts/ClientContext";
 import { BottomNav } from "@/components/BottomNav";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { Sidebar } from "@/components/Sidebar";
+import { PageTransition } from "@/components/PageTransition";
 import { useClients } from "@/hooks/use-clients";
 import { ClientWorkspace } from "@/components/ClientWorkspace";
 import { SourcesTab } from "@/components/ClientWorkspace/SourcesTab";
@@ -38,7 +38,11 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     return null;
   }
 
-  return <Component />;
+  return (
+    <PageTransition>
+      <Component />
+    </PageTransition>
+  );
 }
 
 function AppLayout({ children, showBottomNav = true, showFab = true }: {
@@ -78,18 +82,10 @@ function AppLayout({ children, showBottomNav = true, showFab = true }: {
 
       {isMobile && showBottomNav && (
         <BottomNav
-          onFabClick={() => {}}
+          onFabClick={() => handleFabAction('brief')}
           fabVisible={showFab}
+          activeClientId={activeClientId || undefined}
         />
-      )}
-
-      {isMobile && showFab && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50">
-          <FloatingActionButton
-            clientId={activeClientId || undefined}
-            onAction={handleFabAction}
-          />
-        </div>
       )}
     </>
   );
@@ -126,7 +122,6 @@ function Router() {
           <ProtectedRoute component={() => (
             <AppLayout showFab={false}>
               <ClientWorkspace
-                clientId={params.clientId}
                 sourcesTab={SourcesTab}
                 contentsTab={ContentsTab}
                 briefsTab={BriefsTab}

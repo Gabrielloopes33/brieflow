@@ -19,7 +19,7 @@ import { z } from "zod";
 const sourceSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   url: z.string().url("URL inválida"),
-  type: z.enum(["RSS", "BLOG", "NEWS"]),
+  type: z.enum(["rss", "blog", "news"]),
 });
 
 type SourceFormData = z.infer<typeof sourceSchema>;
@@ -63,11 +63,11 @@ export default function Sources() {
 
   const getSourceIcon = (type: string) => {
     switch (type) {
-      case "RSS":
+      case "rss":
         return <Rss className="w-4 h-4" />;
-      case "BLOG":
+      case "blog":
         return <Globe className="w-4 h-4" />;
-      case "NEWS":
+      case "news":
         return <Newspaper className="w-4 h-4" />;
       default:
         return <Globe className="w-4 h-4" />;
@@ -76,11 +76,11 @@ export default function Sources() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "RSS":
+      case "rss":
         return "bg-orange-500/10 text-orange-500 border-orange-500/20";
-      case "BLOG":
+      case "blog":
         return "bg-blue-500/10 text-blue-500 border-blue-500/20";
-      case "NEWS":
+      case "news":
         return "bg-purple-500/10 text-purple-500 border-purple-500/20";
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20";
@@ -154,9 +154,9 @@ export default function Sources() {
                       <SelectValue placeholder="Selecione o tipo da fonte" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="RSS">RSS Feed</SelectItem>
-                      <SelectItem value="BLOG">Blog</SelectItem>
-                      <SelectItem value="NEWS">News Site</SelectItem>
+                      <SelectItem value="rss">RSS Feed</SelectItem>
+                      <SelectItem value="blog">Blog</SelectItem>
+                      <SelectItem value="news">News Site</SelectItem>
                     </SelectContent>
                   </Select>
                   {form.formState.errors.type && (
@@ -238,11 +238,11 @@ export default function Sources() {
                           <ExternalLink className="w-3 h-3" />
                           Visit Source
                         </a>
-                        {source.lastScraped && (
-                          <p className="text-xs text-muted-foreground">
-                            Last scraped: {new Date(source.lastScraped).toLocaleDateString()}
-                          </p>
-                        )}
+                    {source.lastScrapedAt && (
+                      <p className="text-xs text-muted-foreground">
+                        Last scraped: {new Date(source.lastScrapedAt).toLocaleDateString()}
+                      </p>
+                    )}
                       </div>
                     </CardContent>
                   </Card>

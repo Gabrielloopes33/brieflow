@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useClientContext } from '@/contexts/ClientContext';
+import { useHaptics } from '@/hooks/use-haptics';
 
 interface NavItem {
   label: string;
@@ -16,24 +17,27 @@ interface NavItem {
   path: string;
 }
 
-const navItems: NavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-  { label: 'Clientes', icon: Users, path: '/clients' },
-  { label: 'Conteúdos', icon: Globe, path: '/contents' },
-  { label: 'Pautas', icon: FileText, path: '/briefs' },
-  { label: 'Perfil', icon: User, path: '/profile' },
-];
-
 interface BottomNavProps {
   onFabClick?: () => void;
   fabVisible?: boolean;
+  activeClientId?: string;
 }
 
-export function BottomNav({ onFabClick, fabVisible = true }: BottomNavProps) {
+export function BottomNav({ onFabClick, fabVisible = true, activeClientId }: BottomNavProps) {
   const [location] = useLocation();
-  const { activeClientId } = useClientContext();
+  const { activeClientId: contextClientId } = useClientContext();
+  const { triggerHaptic } = useHaptics();
   
-  const activePath = location.split('?')[0]; // Remove query params
+  const activePath = location.split('?')[0]; 
+  const currentClientId = activeClientId || contextClientId;
+
+  const navItems: NavItem[] = [
+    { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+    { label: 'Clientes', icon: Users, path: '/clients' },
+    { label: 'Conteúdos', icon: Globe, path: currentClientId ? `/workspace/${currentClientId}?tab=contents` : '/contents' },
+    { label: 'Pautas', icon: FileText, path: '/briefs' },
+    { label: 'Perfil', icon: User, path: '/profile' },
+  ]; // Remove query params
 
   const isActive = (path: string) => {
     if (activeClientId && path.startsWith('/workspace')) {
@@ -64,7 +68,10 @@ export function BottomNav({ onFabClick, fabVisible = true }: BottomNavProps) {
           <motion.button
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.05 }}
-            onClick={onFabClick}
+            onClick={() => {
+              triggerHaptic('medium');
+              onFabClick?.();
+            }}
             className="relative -top-4 bg-primary text-primary-foreground w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/20"
           >
             <motion.span
