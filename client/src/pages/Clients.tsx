@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Sidebar } from "@/components/Sidebar";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,8 +9,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertClientSchema, type InsertClient } from "@shared/schema";
 import { useClients, useCreateClient } from "@/hooks/use-clients";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Plus, Search, Loader2, Users, Calendar } from "lucide-react";
 import { Link } from "wouter";
+import { motion } from "framer-motion";
 
 export default function Clients() {
   const { data: clients, isLoading } = useClients();
@@ -24,37 +24,43 @@ export default function Clients() {
   );
 
   return (
-    <div className="flex min-h-screen bg-muted/20">
-      <Sidebar />
-      <main className="flex-1 ml-64 p-8">
-        <PageHeader 
-          title="Clientes" 
-          description="Gerencie sua lista de clientes e suas configurações."
-        >
-          <CreateClientDialog open={open} onOpenChange={setOpen} />
-        </PageHeader>
+    <div className="space-y-6">
+      <PageHeader 
+        title="Clientes" 
+        description="Gerencie sua lista de clientes e suas configurações."
+      >
+        <CreateClientDialog open={open} onOpenChange={setOpen} />
+      </PageHeader>
 
-        {/* Search */}
-        <div className="mb-8 max-w-md relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Pesquisar clientes..." 
-            className="pl-10 bg-card"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {/* Search */}
+      <div className="mb-6 max-w-md relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input 
+          placeholder="Pesquisar clientes..." 
+          className="pl-10 bg-card border-border/50"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-
-        {/* Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClients?.map((client) => (
-              <Link key={client.id} href={`/clients/${client.id}`}>
-                <Card className="card-hover cursor-pointer h-full border-border/50">
+      ) : filteredClients && filteredClients.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {filteredClients.map((client, index) => (
+            <motion.div
+              key={client.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut", delay: index * 0.05 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Link href={`/clients/${client.id}`}>
+                <Card className="bg-card border-border/50 hover:border-border cursor-pointer h-full transition-colors">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-lg mb-3">
@@ -80,10 +86,27 @@ export default function Clients() {
                   </CardContent>
                 </Card>
               </Link>
-            ))}
-          </div>
-        )}
-      </main>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+          className="col-span-full py-12 text-center bg-card rounded-xl border border-border/50"
+        >
+          <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">Nenhum cliente encontrado</h3>
+          <p className="text-muted-foreground mb-4">
+            {search ? "Tente outra busca" : "Comece adicionando seu primeiro cliente"}
+          </p>
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Cliente
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 }

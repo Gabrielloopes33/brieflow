@@ -16,6 +16,8 @@ import { SettingsTab } from "@/components/ClientWorkspace/SettingsTab";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
+import Contents from "@/pages/Contents";
+import Briefs from "@/pages/Briefs";
 import BriefDetail from "@/pages/BriefDetail";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/hooks/use-auth";
@@ -59,7 +61,7 @@ function AppLayout({ children, showBottomNav = true }: {
           <Sidebar />
         </div>
         <main className={cn(
-          "flex-1 pb-16 md:pb-0",
+          "flex-1 pb-16 md:pb-0 px-4 sm:px-6 lg:px-8",
           isMobile ? "ml-0" : "md:ml-16 lg:ml-64"
         )}>
           {children}
@@ -117,6 +119,20 @@ function Router() {
         <ProtectedRoute component={() => (
           <AppLayout showBottomNav={false}>
             <BriefDetail />
+          </AppLayout>
+        )} />
+      </Route>
+      <Route path="/contents">
+        <ProtectedRoute component={() => (
+          <AppLayout>
+            <Contents />
+          </AppLayout>
+        )} />
+      </Route>
+      <Route path="/briefs">
+        <ProtectedRoute component={() => (
+          <AppLayout>
+            <Briefs />
           </AppLayout>
         )} />
       </Route>
