@@ -28,24 +28,20 @@ jobs:
       - name: Deploy to VPS
         run: |
           echo "🚀 Iniciando deploy no VPS..."
-          
+
           ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << 'EOF'
             set -e
-            
+
             echo "📂 Navegando para /opt/brieflow..."
             cd /opt/brieflow
-            
+
             echo "📥 Fazendo git pull..."
-            git fetch origin main
-            git reset --hard origin/main
-            
-            echo "🔄 Atualizando serviço Docker Swarm..."
-            # Força recriação do container com novo código
-            docker service update --force brielflow_app
-            
-            echo "⏳ Aguardando serviço iniciar..."
-            sleep 30
-            
+            git pull github main
+
+            echo "🔄 Executando script de deploy completo..."
+            chmod +x vps-deploy.sh
+            ./vps-deploy.sh all
+
             echo "✅ Deploy concluído!"
           EOF
           
