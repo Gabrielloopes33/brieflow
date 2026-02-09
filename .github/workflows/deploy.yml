@@ -41,7 +41,7 @@ jobs:
             
             echo "🔄 Atualizando serviço Docker Swarm..."
             # Força recriação do container com novo código
-            docker service update --force briefflow_app
+            docker service update --force brielflow_app
             
             echo "⏳ Aguardando serviço iniciar..."
             sleep 30
@@ -56,7 +56,7 @@ jobs:
           
           # Tenta acessar o health endpoint 3 vezes
           for i in 1 2 3; do
-            response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.HOST }}:5000/api/health || echo "000")
+            response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.HOST }}:5001/api/health || echo "000")
             
             if [ "$response" = "200" ]; then
               echo "✅ Aplicação está saudável!"
