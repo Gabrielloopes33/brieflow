@@ -4,7 +4,7 @@ import { type InsertClient, type Client } from "@shared/schema";
 import { useToast } from "./use-toast";
 
 export function useClients() {
-  return useQuery<Client[]>({
+  const result = useQuery<Client[]>({
     queryKey: [api.clients.list.path],
     queryFn: async () => {
       const res = await fetch(api.clients.list.path, { credentials: "include" });
@@ -18,6 +18,11 @@ export function useClients() {
     },
     initialData: [],
   });
+
+  return {
+    ...result,
+    data: result.data || [],
+  };
 }
 
 export function useClient(id: string) {
@@ -46,7 +51,7 @@ export function useCreateClient() {
         body: JSON.stringify(data),
         credentials: "include",
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Failed to create client");

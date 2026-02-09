@@ -19,7 +19,7 @@ import { z } from "zod";
 const sourceSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   url: z.string().url("URL inválida"),
-  type: z.enum("RSS", "BLOG", "NEWS", ["RSS"]),
+  type: z.enum(["RSS", "BLOG", "NEWS"]),
 });
 
 type SourceFormData = z.infer<typeof sourceSchema>;
