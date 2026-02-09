@@ -15,7 +15,7 @@ services:
       "
     ports:
       - target: 5000
-        published: 5000
+        published: 5001
         mode: host
     environment:
       NODE_ENV: production
@@ -48,7 +48,7 @@ services:
     image: nginx:alpine
     ports:
       - target: 80
-        published: 80
+        published: 8082
         mode: host
     volumes:
       - type: bind
@@ -69,7 +69,7 @@ services:
     image: redis:7-alpine
     ports:
       - target: 6379
-        published: 6379
+        published: 6380
         mode: host
     volumes:
       - redis_data:/data
