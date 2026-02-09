@@ -31,7 +31,15 @@ export async function setupVite(server: Server, app: Express) {
 
   app.use(vite.middlewares);
 
-  app.use("/{*path}", async (req, res, next) => {
+  // Catch-all para rotas não-API (serve SPA)
+  // Rotas /api/* são registradas em registerRoutes() ANTES deste middleware
+  app.use((req, res, next) => {
+    // Se for rota de API ou docs, deixa passar para handler 404 do Express
+    if (req.path.startsWith('/api/') || req.path.startsWith('/api-docs')) {
+      return next();
+    }
+
+    // Caso contrário, serve o SPA (index.html)
     const url = req.originalUrl;
 
     try {
