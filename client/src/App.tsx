@@ -148,17 +148,23 @@ function Router() {
   );
 }
 
-function App() {
+function AppContent() {
   const { data: clients } = useClients();
 
   return (
+    <ClientProvider initialClients={clients || []}>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+      </TooltipProvider>
+    </ClientProvider>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
-      <ClientProvider initialClients={clients || []}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ClientProvider>
+      <AppContent />
     </QueryClientProvider>
   );
 }
