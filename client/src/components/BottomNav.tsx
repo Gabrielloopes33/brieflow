@@ -87,7 +87,6 @@ export function BottomNav({ onFabClick, fabVisible = true }: BottomNavProps) {
                   transition={{ duration: 0.2 }}
                 />
               )}
-            />
             </AnimatePresence>
           </motion.button>
         )}
