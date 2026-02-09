@@ -71,7 +71,7 @@ export default function Briefs() {
     <div className="space-y-6">
       <PageHeader 
         title="Pautas"
-        description="Gere e gerencie pautas de conteúdo."
+        description="Gere e gerencie pautas de conteudo."
       >
         <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
           <DialogTrigger asChild>
@@ -101,7 +101,7 @@ export default function Briefs() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="title">Título *</Label>
+                <Label htmlFor="title">Titulo *</Label>
                 <Input
                   id="title"
                   value={generateForm.title}
@@ -111,18 +111,18 @@ export default function Briefs() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição *</Label>
+                <Label htmlFor="description">Descricao *</Label>
                 <Textarea
                   id="description"
                   value={generateForm.description}
                   onChange={(e) => setGenerateForm({ ...generateForm, description: e.target.value })}
-                  placeholder="Descreva o conteúdo do brief, objetivos e requisitos..."
+                  placeholder="Descreva o conteudo do brief, objetivos e requisitos..."
                   rows={3}
                   className="bg-card border-border/50"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="targetAudience">Público-Alvo</Label>
+                <Label htmlFor="targetAudience">Publico-Alvo</Label>
                 <Input
                   id="targetAudience"
                   value={generateForm.targetAudience}
@@ -132,12 +132,12 @@ export default function Briefs() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contentGoal">Objetivo do Conteúdo *</Label>
+                <Label htmlFor="contentGoal">Objetivo do Conteudo *</Label>
                 <Textarea
                   id="contentGoal"
                   value={generateForm.contentGoal}
                   onChange={(e) => setGenerateForm({ ...generateForm, contentGoal: e.target.value })}
-                  placeholder="O que você quer alcançar com este conteúdo?"
+                  placeholder="O que voce quer alcancar com este conteudo?"
                   rows={2}
                   className="bg-card border-border/50"
                 />
@@ -155,7 +155,7 @@ export default function Briefs() {
         <CardHeader>
           <CardTitle>Selecionar Cliente</CardTitle>
           <CardDescription>
-            Escolha um cliente para visualizar e gerenciar suas pautas de conteúdo.
+            Escolha um cliente para visualizar e gerenciar suas pautas de conteudo.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -203,9 +203,8 @@ export default function Briefs() {
                   </Select>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -280,9 +279,10 @@ export default function Briefs() {
                 <p className="text-muted-foreground mb-4">
                   {searchQuery || filterStatus !== "all"
                     ? "Tente ajustar sua busca ou filtros para encontrar o que procura."
-                    : "Pautas aparecerão aqui assim que você gerar seus primeiros briefings de conteúdo."
+                    : "Pautas aparecerao aqui assim que voce gerar seus primeiros briefings de conteudo."
+                }
                 </p>
-                </motion.div>
+              </motion.div>
             )}
           </div>
         </>
@@ -298,7 +298,7 @@ export default function Briefs() {
           <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">Selecione um cliente</h3>
           <p className="text-muted-foreground">
-            Escolha um cliente para visualizar e gerenciar suas pautas de conteúdo.
+            Escolha um cliente para visualizar e gerenciar suas pautas de conteudo.
           </p>
         </motion.div>
       )}
