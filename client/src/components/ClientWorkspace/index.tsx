@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'wouter';
+import { useParams, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ClientContext, useClientContext } from '@/contexts/ClientContext';
 import { useClient } from '@/hooks/use-clients';
@@ -33,7 +33,8 @@ export function ClientWorkspace({
   settingsTab: SettingsTabComponent,
 }: ClientWorkspaceProps) {
   const { clientId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split('?')[1] || '');
   const { setActiveClient } = useClientContext();
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('overview');
