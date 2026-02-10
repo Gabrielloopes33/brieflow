@@ -69,7 +69,7 @@ curl http://localhost/api/health
 
 ### 1. Adicionar Secrets ao Repositório
 
-Vá em: Settings > Secrets and variables > Actions > New repository secret
+Vá em: https://github.com/Gabriellopes33/brieflow/settings/secrets/actions
 
 Adicione os seguintes secrets:
 - `SSH_PRIVATE_KEY`: Chave SSH privada do VPS
@@ -79,14 +79,14 @@ Adicione os seguintes secrets:
 
 ### 2. Gerar Chave SSH
 
-No seu computador local:
+No seu computador local ou VPS:
 
 ```bash
-ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions_key
-ssh-copy-id -i ~/.ssh/github_actions_key.pub root@seu-vps-ip
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_deploy_key
+ssh-copy-id -i ~/.ssh/github_deploy_key.pub root@seu-vps-ip
 ```
 
-Copie o conteúdo de `~/.ssh/github_actions_key` e adicione como `SSH_PRIVATE_KEY` no GitHub.
+Copie o conteúdo de `~/.ssh/github_deploy_key` e adicione como `SSH_PRIVATE_KEY` no GitHub.
 
 ### 3. Ativar Workflows
 
@@ -95,8 +95,58 @@ Os workflows são executados automaticamente quando você faz push para a branch
 ```bash
 git add .
 git commit -m "Add deployment configuration"
-git push origin main
+git push github main
 ```
+
+### 4. Workflow Features
+
+O workflow de deploy agora inclui:
+- ✅ **Teste de conexão SSH** antes de executar comandos
+- ✅ **Fallback automático**: Tenta remote 'github', depois 'origin'
+- ✅ **Retry logic**: 3 tentativas para git pull
+- ✅ **Auto-remote setup**: Cria remote se não existir
+- ✅ **Health check detalhado**: Verifica HTTP e API endpoints
+- ✅ **Logs de debug**: Mensagens detalhadas para troubleshooting
+- ✅ **Error handling**: Captura e exibe logs da VPS em caso de falha
+
+### 5. Troubleshooting do GitHub Actions
+
+#### Erro: "Permission denied (publickey)"
+
+**Causa**: Chave SSH não configurada ou expirada
+
+**Solução**:
+```bash
+# Na VPS, verificar se a chave está em authorized_keys
+ssh root@your-vps-ip
+cat ~/.ssh/authorized_keys | grep github
+
+# Se não aparecer, adicionar manualmente
+cat ~/.ssh/github_deploy_key.pub >> ~/.ssh/authorized_keys
+```
+
+Depois atualize `SSH_PRIVATE_KEY` no GitHub com a chave privada.
+
+#### Erro: "github remote does not exist"
+
+**Causa**: Workflow tenta usar remote 'github' mas só existe 'origin'
+
+**Solução - Quick Fix**:
+```bash
+ssh root@your-vps-ip
+cd /opt/brieflow
+git remote add github git@github.com:Gabriellopes33/brieflow.git
+```
+
+**Ou usar o script de setup**:
+```bash
+cd /opt/brieflow
+./vps-deploy.sh setup
+```
+
+#### Monitorar Deploy
+
+Visite: https://github.com/Gabriellopes33/brieflow/actions
 
 ## Gerenciamento de Containers
 
