@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertClientSchema, type InsertClient } from "@shared/schema";
+import { z } from "zod";
 import { useClients, useCreateClient } from "@/hooks/use-clients";
 import { Plus, Search, Loader2, Users, Calendar } from "lucide-react";
 import { Link } from "wouter";
@@ -111,10 +111,9 @@ export default function Clients() {
   );
 }
 
-function CreateClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+ function CreateClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { mutate, isPending } = useCreateClient();
-  const form = useForm<InsertClient>({
-    resolver: zodResolver(insertClientSchema),
+  const form = useForm<{ name: string; description: string; niche: string; targetAudience: string }>({
     defaultValues: { name: "", description: "", niche: "", targetAudience: "" }
   });
 

@@ -1,25 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl } from "@shared/routes";
-import { type InsertSource, type Source } from "@shared/schema";
+import { supabase } from "@shared/supabase";
 import { useToast } from "./use-toast";
 
 export function useSources(clientId: string) {
-  return useQuery<Source[]>({
-    queryKey: [api.sources.list.path, clientId],
+  return useQuery({
+    queryKey: ['sources', clientId],
     queryFn: async () => {
-      if (!clientId) return [];
-      const url = buildUrl(api.sources.list.path, { clientId });
-      const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: "Unknown error" }));
-        throw new Error(error.message || "Failed to fetch sources");
-      }
-      const data = await res.json();
-      // Garantir que retorna um array
-      return Array.isArray(data) ? data : [];
+      const { data: result, error } = await supabase
+        .from('sources')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return result || [];
     },
     enabled: !!clientId,
-    initialData: [],
   });
 }
 
@@ -28,26 +24,31 @@ export function useCreateSource() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ clientId, data }: { clientId: string; data: Omit<InsertSource, "clientId"> }) => {
-      const url = buildUrl(api.sources.create.path, { clientId });
-      const res = await fetch(url, {
-        method: api.sources.create.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create source");
-      }
-      return api.sources.create.responses[201].parse(await res.json());
+    mutationFn: async (data: { clientId: string; name: string; url: string; type?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: sourceData, error } = await supabase
+        .from('sources')
+        .insert({
+          user_id: user.id,
+          client_id: data.clientId,
+          name: data.name,
+          url: data.url,
+          type: data.type || 'blog',
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return sourceData;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [api.sources.list.path, variables.clientId] });
-      toast({ title: "Success", description: "Source added successfully" });
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['sources', variables.clientId] });
+      toast({ title: "Success", description: "Source created successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
@@ -58,17 +59,20 @@ export function useDeleteSource() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, clientId }: { id: string; clientId: string }) => {
-      const url = buildUrl(api.sources.delete.path, { id });
-      const res = await fetch(url, {
-        method: api.sources.delete.method,
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to delete source");
+    mutationFn: async (sourceId: string) => {
+      const { error } = await supabase
+        .from('sources')
+        .delete()
+        .eq('id', sourceId);
+
+      if (error) throw error;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [api.sources.list.path, variables.clientId] });
-      toast({ title: "Success", description: "Source deleted" });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sources'] });
+      toast({ title: "Success", description: "Source deleted successfully" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
