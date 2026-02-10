@@ -42,8 +42,8 @@ export default function Contents() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Biblioteca de Conteúdo" 
-        description="Navegue e gerencie conteúdo coletado de suas fontes."
+        title="Biblioteca de Conteudo" 
+        description="Navegue e gerencie conteudo coletado de suas fontes."
       />
 
       {/* Client Selector */}
@@ -51,13 +51,13 @@ export default function Contents() {
         <CardHeader>
           <CardTitle>Selecionar Cliente</CardTitle>
           <CardDescription>
-            Escolha um cliente para ver seu conteúdo coletado.
+            Escolha um cliente para ver seu conteudo coletado.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Select value={selectedClient} onValueChange={setSelectedClient}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione um cliente para ver conteúdo" />
+              <SelectValue placeholder="Selecione um cliente para ver conteudo" />
             </SelectTrigger>
             <SelectContent>
               {clients?.map((client) => (
@@ -74,20 +74,18 @@ export default function Contents() {
         <>
           {/* Filters and Search */}
           <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder="Pesquisar conteúdo..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 bg-card border-border/50"
-                    />
-                  </div>
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Pesquisar conteudo..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-card border-border/50"
+                  />
                 </div>
-                <div className="w-full md:w-48">
+                <div className="w-full sm:w-48">
                   <Select value={filterType} onValueChange={setFilterType}>
                     <SelectTrigger>
                       <SelectValue placeholder="Filtrar por tipo" />
@@ -108,7 +106,7 @@ export default function Contents() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-display font-bold">
-                Conteúdo Coletado {filteredContents && `(${filteredContents.length})`}
+                Conteudo Coletado {filteredContents && `(${filteredContents.length})`}
               </h2>
             </div>
 
@@ -124,10 +122,10 @@ export default function Contents() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, ease: "easeOut", delay: index * 0.05 }}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Card className="bg-card border-border/50 hover:border-border cursor-pointer h-full transition-colors">
+                    <Card className="bg-card border-border/50 hover:border-primary/50 cursor-pointer h-full transition-colors">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
@@ -235,7 +233,7 @@ export default function Contents() {
           <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">Selecione um cliente</h3>
           <p className="text-muted-foreground">
-            Escolha um cliente para ver seu conteúdo coletado.
+            Escolha um cliente para ver seu conteudo coletado.
           </p>
         </motion.div>
       )}
