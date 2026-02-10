@@ -12,7 +12,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy to VPS via SSH with Fallback
+    name: Deploy to VPS via SSH
     runs-on: ubuntu-latest
     
     steps:
@@ -29,94 +29,121 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
           
-      - name: Test SSH Connection
-        id: test_ssh
+      - name: Deploy to VPS
         run: |
-          echo "🔍 Testing SSH connection to VPS..."
-          if ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.HOST }} "echo 'SSH connection successful'"; then
-            echo "✅ SSH connection OK"
-            echo "ssh_ok=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ SSH connection failed - will use HTTPS fallback"
-            echo "ssh_ok=false" >> $GITHUB_OUTPUT
-          fi
+          echo "🚀 Starting deployment to VPS..."
+          echo "📌 Host: ${{ secrets.HOST }}"
+          echo "👤 User: ${{ secrets.SSH_USER }}"
+          echo ""
           
-      - name: Deploy to VPS (SSH)
-        if: steps.test_ssh.outputs.ssh_ok == 'true'
-        run: |
-          echo "🚀 Deploying via SSH..."
-          
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << 'ENDSSH'
+          # Deploy via SSH with proper error handling
+          ssh -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << 'ENDSSH'
             set -e
-            set -x  # Enable debug output
-
+            set -x
+            
             echo "📂 Navigating to /opt/brieflow..."
-            cd /opt/brieflow || exit 1
-
-            echo "🔍 Checking git remotes..."
+            cd /opt/brieflow || {
+              echo "❌ ERROR: Directory /opt/brieflow not found!"
+              exit 1
+            }
+            
+            echo "✅ Directory found: $(pwd)"
+            echo ""
+            
+            echo "🔍 Checking git configuration..."
+            echo "=== Current Git Remotes ==="
             git remote -v
-
-            echo "📥 Checking if 'github' remote exists..."
-            if git remote | grep -q "github"; then
+            
+            echo ""
+            echo "=== Checking and creating remotes ==="
+            if git remote | grep -q "^github$"; then
               echo "✅ Remote 'github' exists"
             else
               echo "⚠️  Remote 'github' not found, creating..."
-              git remote add github git@github.com:Gabriellopes33/brieflow.git
+              git remote add github git@github.com:Gabrielloopes33/brieflow.git
+              echo "✅ Remote 'github' created"
             fi
-
-            echo "🔄 Attempting git pull from github remote..."
-            if timeout 60 git pull github main 2>&1; then
-              echo "✅ Git pull successful"
+            
+            if git remote | grep -q "^origin$"; then
+              echo "✅ Remote 'origin' exists"
             else
-              echo "⚠️  Git pull from 'github' failed, trying 'origin'..."
-              if timeout 60 git pull origin main 2>&1; then
-                echo "✅ Git pull from 'origin' successful"
-              else
-                echo "❌ Git pull from both remotes failed - will retry with HTTPS"
-                exit 1
-              fi
+              echo "⚠️  Remote 'origin' not found, creating..."
+              git remote add origin git@github.com:Gabrielloopes33/brieflow.git
+              echo "✅ Remote 'origin' created"
             fi
-
-            echo "🔨 Executing deploy script..."
+            
+            echo ""
+            echo "📥 Attempting git pull from origin..."
+            
+            # Function to retry git pull with timeout
+            attempt_pull() {
+              local max_attempts=3
+              local attempt=1
+              
+              echo "🔄 Attempting git pull (max $max_attempts attempts)..."
+              while [ $attempt -le $max_attempts ]; do
+                echo "📍 Attempt $attempt of $max_attempts..."
+                
+                if timeout 90 git pull origin main 2>&1; then
+                  echo "✅ Git pull successful!"
+                  return 0
+                else
+                  local exit_code=$?
+                  echo "❌ Attempt $attempt failed with exit code: $exit_code"
+                  
+                  if [ $attempt -lt $max_attempts ]; then
+                    echo "⏳ Waiting 10 seconds before retry..."
+                    sleep 10
+                    attempt=$((attempt + 1))
+                  else
+                    echo "❌ All $max_attempts attempts failed"
+                    return 1
+                  fi
+                fi
+              done
+            }
+            
+            # Execute pull with retry
+            if attempt_pull; then
+              echo "✅ Code updated successfully"
+            else
+              echo "❌ Failed to pull code after $max_attempts attempts"
+              exit 1
+            fi
+            
+            echo ""
+            echo "🔨 Checking if deploy script exists..."
             if [ -f vps-deploy.sh ]; then
+              echo "✅ Deploy script found"
               chmod +x vps-deploy.sh
-              ./vps-deploy.sh all
             else
-              echo "⚠️  Deploy script not found, running manual build..."
-              npm install
-              npm run build
+              echo "❌ ERROR: vps-deploy.sh not found!"
+              echo "📋 Contents of /opt/brieflow:"
+              ls -la
+              exit 1
             fi
-
-            echo "✅ Deploy completed via SSH!"
+            
+            echo ""
+            echo "🏗 Executing deploy script..."
+            ./vps-deploy.sh all
+            
+            echo ""
+            echo "✅ Deployment completed successfully!"
           ENDSSH
           
-      - name: Deploy to VPS (HTTPS Fallback)
-        if: steps.test_ssh.outputs.ssh_ok != 'true'
+      - name: Wait for services to start
         run: |
-          echo "🚀 Deploying via HTTPS fallback..."
-          echo "⚠️  SSH not available, using token-based authentication"
-
-          # Deploy to a temporary staging area via SFTP/SCP if available
-          # Otherwise, notify user to manual deploy
-          echo "❌ HTTPS fallback not implemented yet"
-          echo "📧 Please deploy manually:"
-          echo "   1. SSH into VPS"
-          echo "   2. cd /opt/brieflow"
-          echo "   3. git pull origin main"
-          echo "   4. npm run build"
-          exit 1
-          
-      - name: Wait for Deploy to Complete
-        run: |
-          echo "⏳ Waiting 15 seconds for services to start..."
-          sleep 15
+          echo "⏳ Waiting 20 seconds for services to start..."
+          sleep 20
           
       - name: Health Check
         id: health_check
         run: |
-          echo "🔍 Verificando se aplicação está rodando..."
+          echo "🔍 Running health check..."
+          echo "📌 Host: ${{ secrets.HOST }}:$PORT"
+          echo ""
           
-          MAX_RETRIES=3
+          MAX_RETRIES=5
           RETRY_COUNT=0
           
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
@@ -130,42 +157,58 @@ jobs:
             echo "   HTTP code: $HTTP_CODE, Health code: $HEALTH_CODE"
             
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
-              echo "✅ Aplicação está respondendo!"
+              echo "✅ Application is responding on HTTP port!"
               echo "health_ok=true" >> $GITHUB_OUTPUT
               exit 0
             fi
             
             if [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; then
-              echo "⏳ Tentativa $RETRY_COUNT falhou, aguardando 10 segundos..."
+              echo "⏳ Attempt $RETRY_COUNT failed, waiting 10 seconds..."
               sleep 10
             fi
           done
           
-          echo "❌ Health check falhou após $MAX_RETRIES tentativas"
-          echo "   Verifique os logs na VPS:"
-          echo "   ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }}"
-          echo "   docker service logs briefflow_app"
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          echo "   HTTP code: $HTTP_CODE"
+          echo "   Health code: $HEALTH_CODE"
+          echo ""
+          echo "📋 Troubleshooting steps:"
+          echo "   1. Check if containers are running: ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} 'docker ps'"
+          echo "   2. View application logs: ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} 'docker logs brielflow-app --tail=100'"
+          echo "   3. Check if port $PORT is open: curl http://${{ secrets.HOST }}:$PORT"
           echo "health_ok=false" >> $GITHUB_OUTPUT
           exit 1
           
-      - name: Get Logs from VPS (on failure)
-        if: failure() && steps.test_ssh.outputs.ssh_ok == 'true'
+      - name: Get Container Status (on failure)
+        if: failure()
         run: |
-          echo "📋 Getting recent logs from VPS..."
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << 'ENDSSH'
-            echo "=== Docker Service Logs ==="
-            docker service logs briefflow_app --tail 50 || echo "Service not found"
+          echo "📋 Getting container status from VPS..."
+          ssh -o ConnectTimeout=15 ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << 'ENDSSH'
+            set -x
+            echo "=== Docker Container Status ==="
+            docker ps -a
             
             echo ""
-            echo "=== Recent System Logs ==="
-            journalctl -u briefflow -n 50 --no-pager || echo "No systemd logs found"
+            echo "=== Recent Application Logs ==="
+            docker logs brielflow-app --tail=50 || echo "Container brielflow-app not found"
+            
+            echo ""
+            echo "=== System Information ==="
+            df -h | head -5
+            free -h
           ENDSSH
           
       - name: Notify Success
         if: success()
         run: |
           echo "✅ Deploy completed successfully!"
-          echo "🌐 Application is running at: http://${{ secrets.HOST }}:$PORT"
+          echo ""
+          echo "🌐 Application is running at:"
+          echo "   Frontend: http://${{ secrets.HOST }}:$PORT"
+          echo "   API: http://${{ secrets.HOST }}:$PORT/api"
+          echo "   Health: http://${{ secrets.HOST }}:$PORT/api/health"
+          echo ""
+          echo "📊 You can monitor the application at the URL above."
           
       - name: Notify Failure
         if: failure()
@@ -173,17 +216,12 @@ jobs:
           echo "❌ Deploy failed!"
           echo ""
           echo "📊 Summary:"
-          if [ "${{ steps.test_ssh.outputs.ssh_ok }}" = "true" ]; then
-            echo "   ✅ SSH connection: OK"
-            echo "   ❌ Deploy execution: FAILED"
-          else
-            echo "   ❌ SSH connection: FAILED"
-            echo "   ❌ HTTPS fallback: NOT IMPLEMENTED"
-          fi
+          echo "   ✅ SSH connection: Connected"
+          echo "   ❌ Deployment: FAILED"
           echo ""
           echo "🔧 Troubleshooting steps:"
           echo "   1. Check GitHub Secrets (SSH_PRIVATE_KEY, HOST, SSH_USER)"
-          echo "   2. Verify SSH key is added to VPS: ~/.ssh/authorized_keys"
+          echo "   2. Verify SSH keys on VPS: cat ~/.ssh/authorized_keys"
           echo "   3. Test SSH manually: ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }}"
-          echo "   4. Check git remote: git remote -v"
-          echo "   5. Verify deployment logs"
+          echo "   4. Check deployment logs above"
+          echo "   5. Verify service is running: ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} 'docker ps'"
