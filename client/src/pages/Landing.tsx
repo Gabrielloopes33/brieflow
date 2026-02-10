@@ -1,12 +1,12 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, CheckCircle2 } from "lucide-react";
 import { useEffect } from "react";
 
 export default function Landing() {
   const { user, isLoading, refetch } = useAuth();
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     // Check if login was successful
@@ -45,7 +45,7 @@ export default function Landing() {
   if (isLoading) return null;
   if (user) {
     useEffect(() => {
-      navigate('/dashboard');
+      setLocation('/dashboard');
     }, []);
     return null;
   }
@@ -110,7 +110,7 @@ export default function Landing() {
             <Button
               size="lg"
               className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
-              onClick={() => navigate('/auth')}
+              onClick={() => setLocation('/auth')}
             >
               Fazer Login
               <ArrowRight className="ml-2 w-4 h-4" />
