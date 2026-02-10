@@ -15,6 +15,7 @@ import { ContentsTab } from "@/components/ClientWorkspace/ContentsTab";
 import { BriefsTab } from "@/components/ClientWorkspace/BriefsTab";
 import { SettingsTab } from "@/components/ClientWorkspace/SettingsTab";
 import Landing from "@/pages/Landing";
+import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Clients from "@/pages/Clients";
 import Contents from "@/pages/Contents";
@@ -97,6 +98,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/auth" component={Auth} />
       <Route path="/dashboard">
         <ProtectedRoute component={() => (
           <AppLayout>
