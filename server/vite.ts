@@ -39,25 +39,36 @@ export async function setupVite(server: Server, app: Express) {
       return next();
     }
 
-    // Caso contrário, serve o SPA (index.html)
-    const url = req.originalUrl;
+     // Caso contrário, serve o SPA (index.html)
+     const url = req.originalUrl;
 
-    try {
-      const clientTemplate = path.resolve(
-        import.meta.dirname,
-        "..",
-        "client",
-        "index.html",
-      );
+     try {
+       const clientTemplate = path.resolve(
+         import.meta.dirname,
+         "..",
+         "client",
+         "index.html",
+       );
 
-      // always reload the index.html file from disk incase it changes
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`,
-      );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+       // always reload the index.html file from disk in case it changes
+       fs.readFile(clientTemplate, "utf-8", (err, template) => {
+         if (err) {
+           console.error('Error reading index.html:', err);
+           return next();
+         }
+
+         template = template.replace(
+           `src="/src/main.tsx"`,
+           `src="/src/main.tsx?v=${nanoid()}"`,
+         );
+
+         vite.transformIndexHtml(url, template).then((page) => {
+           res.status(200).set({ "Content-Type": "text/html" }).end(page);
+         }).catch((transformErr) => {
+           console.error('Error transforming HTML:', transformErr);
+           return next();
+         });
+       });
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);

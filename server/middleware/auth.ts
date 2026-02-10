@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { createClient } from '@supabase/supabase-js';
 
 declare global {
   namespace Express {
@@ -17,7 +18,6 @@ let supabaseClient: any;
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('SUPABASE_URL or SUPABASE_ANON_KEY not configured');
 } else {
-  const { createClient } = await import('@supabase/supabase-js');
   supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 }
 

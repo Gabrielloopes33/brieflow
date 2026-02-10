@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export default function AuthPage() {
       if (data.session) {
         setSuccess('Login realizado com sucesso!');
         setTimeout(() => {
-          navigate('/dashboard');
+          setLocation('/dashboard');
         }, 1000);
       }
     } catch (err: any) {
@@ -63,9 +63,8 @@ export default function AuthPage() {
       setSuccess('Cadastro realizado! Verifique seu email para confirmar.');
       
       if (data.session) {
-        // Login automático se email não precisar de confirmação
         setTimeout(() => {
-          navigate('/dashboard');
+          setLocation('/dashboard');
         }, 1000);
       }
     } catch (err: any) {
