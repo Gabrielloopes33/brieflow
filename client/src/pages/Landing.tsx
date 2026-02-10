@@ -1,11 +1,12 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
+import { useNavigate } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Zap, CheckCircle2 } from "lucide-react";
 import { useEffect } from "react";
 
 export default function Landing() {
   const { user, isLoading, refetch } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if login was successful
@@ -42,7 +43,12 @@ export default function Landing() {
   }, [refetch]);
 
   if (isLoading) return null;
-  if (user) return <Redirect to="/dashboard" />;
+  if (user) {
+    useEffect(() => {
+      navigate('/dashboard');
+    }, []);
+    return null;
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background">
@@ -101,15 +107,15 @@ export default function Landing() {
           </div>
 
           <div className="space-y-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => navigate('/auth')}
             >
-              Fazer Login Demo
+              Fazer Login
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
-            
+
             <p className="text-xs text-center text-muted-foreground mt-8">
               Ao entrar, você concorda com nossos Termos de Serviço e Política de Privacidade.
             </p>
