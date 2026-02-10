@@ -6,12 +6,56 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
+import { z } from "zod";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const httpServer = createServer(app);
+
+// === IN-MEMORY STORAGE ===
+const clients: any[] = [
+  {
+    id: "1",
+    name: "Cliente Exemplo",
+    description: "Um cliente de exemplo",
+    niche: "Marketing Digital",
+    targetAudience: "Empresas B2B",
+    createdAt: new Date().toISOString()
+  }
+];
+
+const sources: any[] = [];
+const briefs: any[] = [];
+const contents: any[] = [];
+
+// Schemas
+const insertClientSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  niche: z.string().optional(),
+  targetAudience: z.string().optional(),
+});
+
+const insertSourceSchema = z.object({
+  clientId: z.string(),
+  name: z.string(),
+  url: z.string(),
+  type: z.string().default('blog'),
+  isActive: z.boolean().default(true),
+});
+
+const insertBriefSchema = z.object({
+  clientId: z.string(),
+  title: z.string(),
+  angle: z.string().optional(),
+  keyPoints: z.array(z.string()).optional(),
+  contentType: z.string().optional(),
+  suggestedCopy: z.string().optional(),
+  status: z.string().default('draft'),
+  contentIds: z.array(z.string()).optional(),
+});
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -27,6 +71,21 @@ export function log(message: string, source = "express") {
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Log middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      log(`${req.method} ${path} ${res.statusCode} in ${duration}ms`);
+    }
+  });
+
+  next();
+});
 
 // Serve static files from dist/public
 const distPath = path.resolve(__dirname, "..", "dist", "public");
@@ -64,31 +123,180 @@ app.get("/api/health", (req, res) => {
 
 // Simple mock data
 app.get("/api/clients", (req, res) => {
-  res.json([
-    {
-      id: "1",
-      name: "Cliente Exemplo",
-      description: "Um cliente de exemplo",
-      niche: "Marketing Digital",
-      targetAudience: "Empresas B2B",
+  res.json(clients);
+});
+
+// Create client
+app.post("/api/clients", (req, res) => {
+  try {
+    const input = insertClientSchema.parse(req.body);
+    const newClient = {
+      id: crypto.randomUUID(),
+      ...input,
       createdAt: new Date().toISOString()
+    };
+    clients.push(newClient);
+    res.status(201).json(newClient);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ message: err.errors[0].message });
     }
-  ]);
+    res.status(500).json({ message: "Failed to create client" });
+  }
+});
+
+// Get client by ID
+app.get("/api/clients/:id", (req, res) => {
+  const client = clients.find(c => c.id === req.params.id);
+  if (!client) {
+    return res.status(404).json({ message: "Client not found" });
+  }
+  res.json(client);
+});
+
+// Update client
+app.put("/api/clients/:id", (req, res) => {
+  try {
+    const index = clients.findIndex(c => c.id === req.params.id);
+    if (index === -1) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+    const input = insertClientSchema.partial().parse(req.body);
+    clients[index] = { ...clients[index], ...input };
+    res.json(clients[index]);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ message: err.errors[0].message });
+    }
+    res.status(500).json({ message: "Failed to update client" });
+  }
+});
+
+// Delete client
+app.delete("/api/clients/:id", (req, res) => {
+  const index = clients.findIndex(c => c.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: "Client not found" });
+  }
+  clients.splice(index, 1);
+  res.status(204).send();
 });
 
 // Mock sources endpoint
 app.get("/api/clients/:id/sources", (req, res) => {
-  res.json([]);
+  const clientSources = sources.filter(s => s.clientId === req.params.id);
+  res.json(clientSources);
+});
+
+// Create source
+app.post("/api/clients/:clientId/sources", (req, res) => {
+  try {
+    const input = insertSourceSchema.parse({ ...req.body, clientId: req.params.clientId });
+    const newSource = {
+      id: crypto.randomUUID(),
+      ...input,
+      lastScrapedAt: null,
+      createdAt: new Date().toISOString()
+    };
+    sources.push(newSource);
+    res.status(201).json(newSource);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ message: err.errors[0].message });
+    }
+    res.status(500).json({ message: "Failed to create source" });
+  }
+});
+
+// Delete source
+app.delete("/api/sources/:id", (req, res) => {
+  const index = sources.findIndex(s => s.id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: "Source not found" });
+  }
+  sources.splice(index, 1);
+  res.status(204).send();
 });
 
 // Mock contents endpoint
 app.get("/api/clients/:id/contents", (req, res) => {
-  res.json([]);
+  const clientContents = contents.filter(c => c.clientId === req.params.id);
+  res.json(clientContents);
 });
 
 // Mock briefs endpoint
 app.get("/api/clients/:id/briefs", (req, res) => {
-  res.json([]);
+  const clientBriefs = briefs.filter(b => b.clientId === req.params.id);
+  res.json(clientBriefs);
+});
+
+// Get brief by ID
+app.get("/api/briefs/:id", (req, res) => {
+  const brief = briefs.find(b => b.id === req.params.id);
+  if (!brief) {
+    return res.status(404).json({ message: "Brief not found" });
+  }
+  res.json(brief);
+});
+
+// Create brief
+app.post("/api/clients/:clientId/briefs", (req, res) => {
+  try {
+    const input = insertBriefSchema.parse({ ...req.body, clientId: req.params.clientId });
+    const newBrief = {
+      id: crypto.randomUUID(),
+      ...input,
+      createdAt: new Date().toISOString(),
+      generatedBy: 'claude'
+    };
+    briefs.push(newBrief);
+    res.status(201).json(newBrief);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ message: err.errors[0].message });
+    }
+    res.status(500).json({ message: "Failed to create brief" });
+  }
+});
+
+// Update brief
+app.put("/api/briefs/:id", (req, res) => {
+  try {
+    const index = briefs.findIndex(b => b.id === req.params.id);
+    if (index === -1) {
+      return res.status(404).json({ message: "Brief not found" });
+    }
+    const input = insertBriefSchema.partial().parse(req.body);
+    briefs[index] = { ...briefs[index], ...input };
+    res.json(briefs[index]);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ message: err.errors[0].message });
+    }
+    res.status(500).json({ message: "Failed to update brief" });
+  }
+});
+
+// Generate brief (AI endpoint)
+app.post("/api/clients/:clientId/briefs/generate", (req, res) => {
+  try {
+    const { topic } = req.body;
+    const newBrief = {
+      id: crypto.randomUUID(),
+      clientId: req.params.clientId,
+      title: `Generated Brief: ${topic || "Topic"}`,
+      angle: "Comprehensive Guide",
+      keyPoints: ["Point 1", "Point 2", "Point 3"],
+      suggestedCopy: "Here is a draft copy...",
+      status: "draft",
+      generatedBy: "claude",
+      createdAt: new Date().toISOString()
+    };
+    briefs.push(newBrief);
+    res.status(201).json(newBrief);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to generate brief" });
+  }
 });
 
 // Mock auth endpoints
@@ -141,21 +349,6 @@ app.get("/api/user", (req, res) => {
     lastName: "User",
     email: "demo@example.com"
   });
-});
-
-// Log middleware
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      log(`${req.method} ${path} ${res.statusCode} in ${duration}ms`);
-    }
-  });
-
-  next();
 });
 
 // Error handling

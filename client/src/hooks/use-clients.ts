@@ -1,41 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl } from "@shared/routes";
-import { type InsertClient, type Client } from "@shared/schema";
+import { supabase } from "@shared/supabase";
 import { useToast } from "./use-toast";
 
 export function useClients() {
-  const result = useQuery<Client[]>({
-    queryKey: [api.clients.list.path],
-    queryFn: async () => {
-      const res = await fetch(api.clients.list.path, { credentials: "include" });
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: "Unknown error" }));
-        throw new Error(error.message || "Failed to fetch clients");
-      }
-      const data = await res.json();
-      // Garantir que retorna um array
-      return Array.isArray(data) ? data : [];
-    },
-    initialData: [],
-  });
-
-  return {
-    ...result,
-    data: result.data || [],
-  };
-}
-
-export function useClient(id: string) {
   return useQuery({
-    queryKey: [api.clients.get.path, id],
+    queryKey: ['clients'],
     queryFn: async () => {
-      const url = buildUrl(api.clients.get.path, { id });
-      const res = await fetch(url, { credentials: "include" });
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error("Failed to fetch client");
-      return api.clients.get.responses[200].parse(await res.json());
+      const { data: result, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return result || [];
     },
-    enabled: !!id,
   });
 }
 
@@ -44,25 +22,30 @@ export function useCreateClient() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (data: InsertClient) => {
-      const res = await fetch(api.clients.create.path, {
-        method: api.clients.create.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
+    mutationFn: async (data: { name: string; description?: string; niche?: string; targetAudience?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create client");
-      }
-      return api.clients.create.responses[201].parse(await res.json());
+      const { data: clientData, error } = await supabase
+        .from('clients')
+        .insert({
+          user_id: user.id,
+          name: data.name,
+          description: data.description,
+          niche: data.niche,
+          target_audience: data.targetAudience,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return clientData;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.clients.list.path] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
       toast({ title: "Success", description: "Client created successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });

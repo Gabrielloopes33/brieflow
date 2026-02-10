@@ -1,10 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Client } from '@shared/schema';
 import { getStorageValue, setStorageValue, removeStorageValue, STORAGE_KEYS } from '@/lib/client-storage';
 
-interface ClientContextType {
+export interface ClientContextType {
   activeClientId: string | null;
-  activeClient: Client | null;
+  activeClient: any | null;
   setActiveClient: (clientId: string | null) => void;
   clearActiveClient: () => void;
   isLoading: boolean;
