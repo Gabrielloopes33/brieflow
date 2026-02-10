@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClientProvider } from "@/contexts/ClientContext";
 import { BottomNav } from "@/components/BottomNav";
+import { MobileHeader } from "@/components/MobileHeader";
 import { Sidebar } from "@/components/Sidebar";
 import { PageTransition } from "@/components/PageTransition";
 import { useClients } from "@/hooks/use-clients";
@@ -24,6 +25,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -48,23 +50,39 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   );
 }
 
-function AppLayout({ children, showBottomNav = true }: {
+function AppLayout({ children, showBottomNav = true, showMobileHeader = true }: {
   children: React.ReactNode;
   showBottomNav?: boolean;
+  showMobileHeader?: boolean;
 }) {
   const isMobile = useIsMobile();
+  const [searchValue, setSearchValue] = useState("");
 
   return (
     <>
+      {isMobile && showMobileHeader && (
+        <MobileHeader 
+          onSearch={setSearchValue}
+          showNotificationBadge={false}
+        />
+      )}
+
       <div className="flex min-h-screen">
         <div className="hidden md:block">
           <Sidebar />
         </div>
         <main className={cn(
-          "flex-1 pb-16 md:pb-0 px-4 sm:px-6 lg:px-8",
-          isMobile ? "ml-0" : "md:ml-16 lg:ml-64"
+          "flex-1 transition-all duration-300",
+          // Desktop padding
+          "md:pb-0 md:px-6 md:py-6 lg:px-8 lg:py-8",
+          // Mobile padding - mais respiraco
+          isMobile 
+            ? "pb-24 px-4 py-4 sm:px-5 sm:py-5" 
+            : "md:ml-16 lg:ml-64"
         )}>
-          {children}
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
 
@@ -117,7 +135,7 @@ function Router() {
       </Route>
       <Route path="/briefs/:id">
         <ProtectedRoute component={() => (
-          <AppLayout showBottomNav={false}>
+          <AppLayout showBottomNav={false} showMobileHeader={false}>
             <BriefDetail />
           </AppLayout>
         )} />

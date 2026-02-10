@@ -80,7 +80,7 @@ export default function Briefs() {
               Gerar Pauta
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Gerar Nova Pauta</DialogTitle>
             </DialogHeader>
@@ -177,8 +177,8 @@ export default function Briefs() {
       {selectedClient && (
         <>
           <Card className="mb-6 bg-card border-border/50">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
@@ -188,7 +188,7 @@ export default function Briefs() {
                     className="pl-10 bg-card border-border/50"
                   />
                 </div>
-                <div className="w-full md:w-48">
+                <div className="w-full sm:w-48">
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger>
                       <SelectValue placeholder="Filter by status" />
@@ -225,11 +225,11 @@ export default function Briefs() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, ease: "easeOut", delay: index * 0.05 }}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <Link href={`/briefs/${brief.id}`}>
-                      <Card className="bg-card border-border/50 hover:border-border cursor-pointer h-full transition-colors">
+                      <Card className="bg-card border-border/50 hover:border-primary/50 cursor-pointer h-full transition-colors">
                         <CardHeader className="mb-3">
                           <div className="flex justify-between items-start gap-2">
                             <Badge variant="outline" className={getStatusColor(brief.status)}>
@@ -245,7 +245,7 @@ export default function Briefs() {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-muted-foreground line-clamp-3">
+                          <p className="text-muted-foreground line-clamp-3 mb-3">
                             {brief.description}
                           </p>
                           {brief.targetAudience && (
@@ -255,7 +255,7 @@ export default function Briefs() {
                             </div>
                           )}
                           {brief.contentGoal && (
-                            <p className="text-sm font-medium">
+                            <p className="text-sm font-medium mt-2">
                               Target: {brief.contentGoal}
                             </p>
                           )}
