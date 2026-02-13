@@ -1,12 +1,44 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Configurações do ambiente
-const supabaseUrl = process.env.SUPABASE_URL || 'https://supa.agenciatouch.com.br';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'YOUR_ANON_KEY';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || 'YOUR_SERVICE_KEY';
+// Detecta se está no browser (frontend) ou Node.js (backend)
+const isBrowser = typeof window !== 'undefined';
+
+// Configurações do ambiente - funciona tanto no Node.js quanto no Vite
+const supabaseUrl = isBrowser
+  ? (import.meta.env?.VITE_SUPABASE_URL)
+  : (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL);
+
+const supabaseAnonKey = isBrowser
+  ? (import.meta.env?.VITE_SUPABASE_ANON_KEY)
+  : (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY);
+
+const supabaseServiceKey = isBrowser
+  ? (import.meta.env?.VITE_SUPABASE_SERVICE_KEY)
+  : (process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_SERVICE_KEY);
+
+// Validação das variáveis
+if (!supabaseUrl) {
+  throw new Error(
+    '❌ VITE_SUPABASE_URL não está definido!\n' +
+    'Verifique se a variável de ambiente está configurada no Netlify.'
+  );
+}
+
+if (!supabaseAnonKey) {
+  throw new Error(
+    '❌ VITE_SUPABASE_ANON_KEY não está definido!\n' +
+    'Verifique se a variável de ambiente está configurada no Netlify.'
+  );
+}
+
+if (!supabaseServiceKey && !isBrowser) {
+  console.warn('⚠️  SUPABASE_SERVICE_KEY não está definido (apenas necessário no backend)');
+}
 
 // Cliente com anon key (usado no frontend - RLS respeita user)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Cliente com service role (usado no backend - ignora RLS)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null as any;
