@@ -21,7 +21,6 @@ docker-compose.yml
 Thumbs.db
 coverage
 .nyc_output
-dist
 .cache
 .parcel-cache
 .next
