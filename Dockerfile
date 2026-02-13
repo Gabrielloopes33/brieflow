@@ -1,36 +1,15 @@
-FROM node:18-alpine AS builder
-
+FROM node:18-alpine
 WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm ci --only=production
-
-COPY . .
-
-RUN npm run build
-
-FROM node:18-alpine AS runner
-
-WORKDIR /app
-
 RUN apk add --no-cache postgresql-client
-
-COPY --from=builder /app/dist ./dist
-
-COPY --from=builder /app/node_modules ./node_modules
-
-COPY --from=builder /app/package.json ./
-
-COPY --from=builder /app/db ./db
-
-COPY --from=builder /app/shared ./shared
-
+COPY package*.json ./
+RUN npm ci --only=production
+# NOVO: Copiar código fonte necessário
+COPY server ./server
+COPY shared ./shared
+# Manter dist/ para assets do frontend
+COPY dist ./dist
 ENV NODE_ENV=production
-
 EXPOSE 5000
-
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-CMD ["npm", "run", "start:production"]
+CMD ["node", "dist/index.cjs"]
