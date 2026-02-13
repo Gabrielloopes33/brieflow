@@ -159,6 +159,36 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  scraper:
+    build:
+      context: ./scraper
+      dockerfile: Dockerfile
+    container_name: briefflow-scraper
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_PATH=/app/data/briefflow.db
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - SCRAPER_INTERVAL=3600
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - briefflow-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 networks:
   briefflow-network:
     driver: bridge
