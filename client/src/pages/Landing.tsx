@@ -8,8 +8,15 @@ export default function Landing() {
   const { user, isLoading, refetch } = useAuth();
   const [location, setLocation] = useLocation();
 
+  // Redirect to dashboard if already logged in
   useEffect(() => {
-    // Check if login was successful
+    if (user) {
+      setLocation('/dashboard');
+    }
+  }, [user, setLocation]);
+
+  // Check if login was successful from URL param
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('login') === 'success') {
       // Clear the URL parameter
@@ -21,34 +28,8 @@ export default function Landing() {
     }
   }, [refetch]);
 
-  // Show loading when checking auth
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/user', {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          refetch();
-        }
-      } catch (error) {
-        // User not authenticated, continue showing landing
-      }
-    };
-    
-    // Check immediately and then every few seconds
-    checkAuth();
-    const interval = setInterval(checkAuth, 2000);
-    return () => clearInterval(interval);
-  }, [refetch]);
-
   if (isLoading) return null;
-  if (user) {
-    useEffect(() => {
-      setLocation('/dashboard');
-    }, []);
-    return null;
-  }
+  if (user) return null;
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background">
