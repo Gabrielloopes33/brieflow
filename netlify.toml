@@ -1,6 +1,6 @@
 [build]
   publish = "dist/public"
-  command = "npm install && npx vite build"
+  command = "npm ci --include=dev && npm run build"
 
 # ============================================
 # PROXY PARA API NA VPS
@@ -29,6 +29,7 @@
 
 [build.environment]
   NODE_ENV = "production"
+  NPM_CONFIG_PRODUCTION = "false"
 
 # ============================================
 # HEADERS DE SEGURANÇA (Opcional)
