@@ -7,6 +7,7 @@
     "dev": "NODE_ENV=development tsx server/index.ts",
     "start": "NODE_ENV=production tsx server/index.ts",
     "build": "tsx script/build.ts",
+    "build:client": "vite build",
     "check": "tsc",
     "migrate": "psql $DATABASE_URL -f supabase/migrations/001_initial_schema.sql",
     "migrate:rls": "psql $DATABASE_URL -f supabase/migrations/002_rls_policies.sql"
