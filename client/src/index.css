@@ -1,73 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+@layer base {
+  :root {
+    /* Firecrawl-inspired Dark Mode Palette */
+    --background: 0 0% 4%; /* #0a0a0a */
+    --foreground: 0 0% 98%;
 
-  /* Indigo/Slate Theme - Professional & Crisp */
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
+    --card: 0 0% 8%; /* #141414 */
+    --card-foreground: 0 0% 98%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+    --primary: 18 96% 54%; /* #fa5d19 Firecrawl Heat */
+    --primary-foreground: 0 0% 98%;
 
-  --primary: 249 95% 60%; /* Vibrant Indigo */
-  --primary-foreground: 210 40% 98%;
+    --secondary: 0 0% 15%; /* #262626 */
+    --secondary-foreground: 0 0% 98%;
 
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222 47% 11.2%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
 
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222 47% 11.2%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+    --border: 0 0% 16.5%; /* #2a2a2a */
+    --input: 0 0% 16.5%;
+    --ring: 18 96% 54%;
 
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 249 95% 60%;
+    --radius: 0.5rem;
+  }
 
-  --radius: 0.75rem;
-}
-
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-
-  --primary: 249 95% 60%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 249 95% 60%;
+  .dark {
+    /* Same as root for now, as we are enforcing dark mode */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 18 96% 54%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 16.5%;
+    --input: 0 0% 16.5%;
+    --ring: 18 96% 54%;
+  }
 }
 
 @layer base {
@@ -76,19 +68,28 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
+    font-family: 'Inter', sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+    font-family: 'Outfit', sans-serif;
     @apply tracking-tight;
   }
 }
 
-/* Custom Utilities for Glassmorphism & Cards */
+/* Glassmorphism & Utilities */
 .glass-panel {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  @apply bg-[#0a0a0a]/80 backdrop-blur-md border border-white/5;
 }
 
-.card-hover {
-  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary/20;
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60;
 }
+
+.text-gradient-primary {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#fa5d19] to-[#ff9e70];
+}
+
+.feature-card {
+  @apply bg-card border border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_20px_-10px_rgba(250,93,25,0.3)];
+}
+

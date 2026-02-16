@@ -1,190 +1,99 @@
-import { PageHeader } from "@/components/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useClients } from "@/hooks/use-clients";
-import { Users, FileText, ArrowUpRight, Plus, ExternalLink, TrendingUp } from "lucide-react";
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 
-export default function Dashboard() {
-  const { data: clients } = useClients();
+import { MOCK_METRICS } from "@/lib/mockData";
+import { MetricCard } from "@/components/ui/MetricCard";
+import { ChatInterface } from "@/components/chat/ChatInterface";
+import { Instagram, Facebook, Search } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell";
 
-  const stats = [
-    { 
-      label: "Total de Clientes", 
-      value: clients?.length || 0, 
-      icon: Users, 
-      color: "text-blue-500", 
-      bg: "bg-blue-500",
-      trend: "+2 novos este mes"
-    },
-    { 
-      label: "Pautas Ativas", 
-      value: "12", 
-      icon: FileText, 
-      color: "text-purple-500", 
-      bg: "bg-purple-500",
-      trend: "+8% vs mes passado"
-    },
-    { 
-      label: "Aprovacoes Pendentes", 
-      value: "4", 
-      icon: ArrowUpRight, 
-      color: "text-amber-500", 
-      bg: "bg-amber-500",
-      trend: "3 precisam atencao"
-    },
-  ];
-
+export function Dashboard() {
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Painel"
-        description="Visao geral das suas operacoes de conteudo."
-      >
-        <Link href="/clients">
-          <Button className="md:hidden">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Cliente
-          </Button>
-        </Link>
-      </PageHeader>
+    <AppShell>
+      <div className="flex flex-col h-full gap-6 max-w-7xl mx-auto">
 
-      {/* Stats Grid - Mobile First */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut", delay: i * 0.05 }}
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Card className={cn(
-              "card-hover border-border/50 h-full overflow-hidden relative",
-              "bg-gradient-to-br from-card to-card/50"
-            )}>
-              {/* Top accent bar */}
-              <div className={cn("absolute top-0 left-0 right-0 h-1", stat.bg)} />
-              
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{stat.label}</p>
-                    <motion.p 
-                      className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-tight"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, delay: i * 0.1 + 0.2 }}
-                    >
-                      {stat.value}
-                    </motion.p>
-                    <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                      <TrendingUp className={cn("w-3 h-3", stat.color)} />
-                      <span>{stat.trend}</span>
-                    </div>
-                  </div>
-                  <div className={cn(
-                    "p-3 rounded-xl shadow-sm",
-                    stat.bg.replace('bg-', 'bg-') + "/10"
-                  )}>
-                    <motion.div
-                      animate={{
-                        rotate: [0, -10, 10, -10, 0],
-                      }}
-                      transition={{
-                        duration: 0.5,
-                        delay: i * 0.1,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <stat.icon className={cn("w-6 h-6", stat.color)} />
-                    </motion.div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Recent Clients Section */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-display font-bold">Clientes Recentes</h2>
-          <Link href="/clients" className="text-sm text-primary hover:underline font-medium flex items-center gap-1">
-            Ver Todos <ExternalLink className="w-3 h-3" />
-          </Link>
+        {/* Mini Metrics Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+          <MetricCard
+            title="Insta Reach"
+            value={MOCK_METRICS.instagram.reach}
+            change={MOCK_METRICS.instagram.growth}
+            trend="up"
+            icon={<Instagram size={16} />}
+          />
+          <MetricCard
+            title="FB Engagement"
+            value={MOCK_METRICS.facebook.engagement}
+            change={MOCK_METRICS.facebook.growth}
+            trend="down"
+            icon={<Facebook size={16} />}
+          />
+          <MetricCard
+            title="Google Clicks"
+            value={MOCK_METRICS.google.clicks}
+            change="+12%"
+            trend="up"
+            icon={<Search size={16} />}
+          />
+          <MetricCard
+            title="Total Posts"
+            value="142"
+            change="+5"
+            trend="neutral"
+            icon={<div className="w-4 h-4 bg-primary rounded-sm" />}
+          />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {clients?.slice(0, 3).map((client, i) => (
-            <motion.div
-              key={client.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut", delay: i * 0.05 + 0.15 }}
-              whileHover={{ scale: 1.02, y: -4 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link href={`/clients/${client.id}`}>
-                <Card className={cn(
-                  "card-hover cursor-pointer h-full border-border/50 hover:border-primary/50 transition-colors",
-                  "bg-gradient-to-br from-card to-card/50"
-                )}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="truncate text-lg">{client.name}</span>
-                      <motion.div
-                        whileHover={{ rotate: 45, scale: 1.1 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                      </motion.div>
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2 text-sm">
-                      {client.niche || "No niche defined"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className={cn(
-                      "flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg",
-                      "bg-muted/30"
-                    )}>
-                      <Users className="w-4 h-4" />
-                      <span className="truncate">{client.targetAudience || "General audience"}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-          {(!clients || clients.length === 0) && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-              className="col-span-full py-12 text-center bg-card rounded-xl border border-dashed"
-            >
-              <motion.div
-                animate={{
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              >
-                <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              </motion.div>
-              <p className="text-muted-foreground">Nenhum cliente ainda. Adicione o primeiro para comecar.</p>
-            </motion.div>
-          )}
+        {/* Main Workspace */}
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0">
+
+          {/* Chat Area (Center) */}
+          <div className="md:col-span-8 h-full flex flex-col min-h-0">
+            <div className="h-full">
+              <ChatInterface />
+            </div>
+          </div>
+
+          {/* Quick References / Knowledge (Right Side) */}
+          <div className="hidden md:flex md:col-span-4 flex-col gap-4 overflow-y-auto pr-2">
+            <div className="bg-card border border-border p-5 rounded-xl">
+              <h3 className="font-display font-semibold mb-3 flex items-center">
+                <SparklesIcon className="w-4 h-4 mr-2 text-primary" />
+                Quick Actions
+              </h3>
+              <div className="space-y-2">
+                <button className="w-full text-left px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary hover:text-white text-sm transition-colors border border-transparent hover:border-border">
+                  ✨ Generate Post Idea
+                </button>
+                <button className="w-full text-left px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary hover:text-white text-sm transition-colors border border-transparent hover:border-border">
+                  📊 Audit Competitor
+                </button>
+                <button className="w-full text-left px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary hover:text-white text-sm transition-colors border border-transparent hover:border-border">
+                  📅 Schedule Content
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border p-5 rounded-xl flex-1">
+              <h3 className="font-display font-semibold mb-3">Recent Knowledge</h3>
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="p-3 rounded-lg border border-border bg-background/50 hover:border-primary/50 transition-colors cursor-pointer group">
+                    <div className="text-xs text-primary mb-1">REFERENCE</div>
+                    <div className="font-medium text-sm group-hover:text-primary transition-colors">How to use AI for SEO in 2025</div>
+                    <div className="text-xs text-muted-foreground mt-2">Added 2 days ago</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-    </div>
+    </AppShell>
   );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
+  )
 }

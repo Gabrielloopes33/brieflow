@@ -1,0 +1,48 @@
+[build]
+  publish = "dist/public"
+  command = "npm install && npx vite build"
+
+# ============================================
+# PROXY PARA API NA VPS
+# IP da VPS: 185.216.203.73
+# ============================================
+[[redirects]]
+  from = "/api/*"
+  to = "http://185.216.203.73:5000/api/:splat"
+  status = 200
+  force = true
+
+# Proxy para Scraper Python (porta 8000)
+[[redirects]]
+  from = "/scraper/*"
+  to = "http://185.216.203.73:8000/:splat"
+  status = 200
+  force = true
+
+# ============================================
+# SPA FALLBACK - Sempre serve index.html
+# ============================================
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_ENV = "production"
+
+# ============================================
+# HEADERS DE SEGURANÇA (Opcional)
+# ============================================
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache para assets estáticos
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

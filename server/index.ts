@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -24,8 +25,23 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-// Auth Middleware - Adicionar após express.json mas antes das rotas
-app.use(authMiddleware);
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5001',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'apikey']
+};
+
+app.use(cors(corsOptions));
+
+// Public routes (no auth required)
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Apply auth middleware only to protected routes
+app.use("/api", authMiddleware);
 
 // Swagger UI
 app.use("/api-docs", swaggerUi.serve);
