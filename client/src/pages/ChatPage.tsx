@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { useClients } from "@/hooks/use-clients";
+import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import {
     ExternalLink,
     ChevronRight,
     User,
+    Database,
 } from "lucide-react";
 
 type ToolTab = "scrape" | "search" | "agent" | "map" | "crawl";
@@ -38,34 +40,78 @@ export function ChatPage() {
     const [activeTab, setActiveTab] = useState<ToolTab>("scrape");
     const [selectedClient, setSelectedClient] = useState<string>("");
     const { data: clients } = useClients();
+    const { toast } = useToast();
 
     // Scrape state
     const [scrapeUrl, setScrapeUrl] = useState("");
     const [scrapeFormat, setScrapeFormat] = useState<"markdown" | "html" | "links">("markdown");
     const [scrapeResult, setScrapeResult] = useState<ScrapeResult | null>(null);
     const [scrapeLoading, setScrapeLoading] = useState(false);
+    const [savingScrape, setSavingScrape] = useState(false);
 
     // Search state
     const [searchQuery, setSearchQuery] = useState("");
     const [searchNumResults, setSearchNumResults] = useState("5");
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
+    const [savingSearch, setSavingSearch] = useState(false);
 
     // Agent state
     const [agentPrompt, setAgentPrompt] = useState("");
     const [agentResult, setAgentResult] = useState("");
     const [agentLoading, setAgentLoading] = useState(false);
+    const [savingAgent, setSavingAgent] = useState(false);
 
     // Map state
     const [mapUrl, setMapUrl] = useState("");
     const [mapResult, setMapResult] = useState<string[]>([]);
     const [mapLoading, setMapLoading] = useState(false);
+    const [savingMap, setSavingMap] = useState(false);
 
     // Crawl state
     const [crawlUrl, setCrawlUrl] = useState("");
     const [crawlMaxPages, setCrawlMaxPages] = useState("10");
     const [crawlResult, setCrawlResult] = useState<string[]>([]);
     const [crawlLoading, setCrawlLoading] = useState(false);
+    const [savingCrawl, setSavingCrawl] = useState(false);
+
+    // Save to knowledge base helper
+    const saveToKnowledgeBase = async (
+        type: "scrape" | "search" | "agent" | "map" | "crawl",
+        title: string,
+        content: string,
+        sourceUrl?: string
+    ) => {
+        if (!selectedClient) {
+            toast({
+                title: "Erro",
+                description: "Selecione um cliente primeiro",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/clients/${selectedClient}/knowledge`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, content, type, source_url: sourceUrl }),
+            });
+
+            if (!res.ok) throw new Error("Failed to save");
+
+            toast({
+                title: "Sucesso",
+                description: "Item salvo na base de conhecimento",
+            });
+        } catch {
+            toast({
+                title: "Erro",
+                description: "Falha ao salvar no banco",
+                variant: "destructive",
+            });
+        }
+    };
 
     const handleScrape = async () => {
         if (!scrapeUrl.trim()) return;
@@ -267,15 +313,39 @@ export function ChatPage() {
                                 </Button>
 
                                 {scrapeResult && (
-                                    <div className="mt-2 p-3 rounded-lg bg-secondary/20 border border-border/50 text-xs font-mono text-muted-foreground max-h-64 overflow-y-auto whitespace-pre-wrap break-all">
-                                        {scrapeFormat === "links" && Array.isArray(scrapeResult.links)
-                                            ? scrapeResult.links.map((l, i) => (
-                                                <a key={i} href={l} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline mb-1">
-                                                    <ExternalLink size={10} /> {l}
-                                                </a>
-                                            ))
-                                            : scrapeResult.markdown || scrapeResult.html || JSON.stringify(scrapeResult, null, 2)}
-                                    </div>
+                                    <>
+                                        <Button
+                                            onClick={async () => {
+                                                setSavingScrape(true);
+                                                const content = scrapeFormat === "links" && Array.isArray(scrapeResult.links)
+                                                    ? scrapeResult.links.join("\n")
+                                                    : scrapeResult.markdown || scrapeResult.html || JSON.stringify(scrapeResult, null, 2);
+                                                await saveToKnowledgeBase(
+                                                    "scrape",
+                                                    `Scrape: ${scrapeResult.url}`,
+                                                    content,
+                                                    scrapeResult.url
+                                                );
+                                                setSavingScrape(false);
+                                            }}
+                                            disabled={savingScrape || !selectedClient}
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full h-8 text-xs"
+                                        >
+                                            {savingScrape ? <Loader2 size={12} className="animate-spin mr-2" /> : <Database size={12} className="mr-2" />}
+                                            Salvar no Banco
+                                        </Button>
+                                        <div className="mt-2 p-3 rounded-lg bg-secondary/20 border border-border/50 text-xs font-mono text-muted-foreground max-h-64 overflow-y-auto whitespace-pre-wrap break-all">
+                                            {scrapeFormat === "links" && Array.isArray(scrapeResult.links)
+                                                ? scrapeResult.links.map((l, i) => (
+                                                    <a key={i} href={l} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline mb-1">
+                                                        <ExternalLink size={10} /> {l}
+                                                    </a>
+                                                ))
+                                                : scrapeResult.markdown || scrapeResult.html || JSON.stringify(scrapeResult, null, 2)}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}
@@ -316,16 +386,37 @@ export function ChatPage() {
                                 </Button>
 
                                 {searchResults.length > 0 && (
-                                    <div className="space-y-2 mt-2">
-                                        {searchResults.map((r, i) => (
-                                            <div key={i} className="p-3 rounded-lg bg-secondary/20 border border-border/50 hover:border-primary/30 transition-colors">
-                                                <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-primary hover:underline flex items-center gap-1 mb-1">
-                                                    <ExternalLink size={10} /> {r.title}
-                                                </a>
-                                                <p className="text-xs text-muted-foreground line-clamp-2">{r.description}</p>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <>
+                                        <Button
+                                            onClick={async () => {
+                                                setSavingSearch(true);
+                                                const content = searchResults.map(r => `${r.title}\n${r.url}\n${r.description}`).join("\n\n");
+                                                await saveToKnowledgeBase(
+                                                    "search",
+                                                    `Search: ${searchQuery}`,
+                                                    content
+                                                );
+                                                setSavingSearch(false);
+                                            }}
+                                            disabled={savingSearch || !selectedClient}
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full h-8 text-xs"
+                                        >
+                                            {savingSearch ? <Loader2 size={12} className="animate-spin mr-2" /> : <Database size={12} className="mr-2" />}
+                                            Salvar no Banco
+                                        </Button>
+                                        <div className="space-y-2 mt-2">
+                                            {searchResults.map((r, i) => (
+                                                <div key={i} className="p-3 rounded-lg bg-secondary/20 border border-border/50 hover:border-primary/30 transition-colors">
+                                                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-primary hover:underline flex items-center gap-1 mb-1">
+                                                        <ExternalLink size={10} /> {r.title}
+                                                    </a>
+                                                    <p className="text-xs text-muted-foreground line-clamp-2">{r.description}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}
@@ -352,9 +443,29 @@ export function ChatPage() {
                                 </Button>
 
                                 {agentResult && (
-                                    <div className="mt-2 p-3 rounded-lg bg-secondary/20 border border-border/50 text-xs text-muted-foreground max-h-64 overflow-y-auto whitespace-pre-wrap">
-                                        {agentResult}
-                                    </div>
+                                    <>
+                                        <Button
+                                            onClick={async () => {
+                                                setSavingAgent(true);
+                                                await saveToKnowledgeBase(
+                                                    "agent",
+                                                    `Agent: ${agentPrompt.slice(0, 50)}...`,
+                                                    agentResult
+                                                );
+                                                setSavingAgent(false);
+                                            }}
+                                            disabled={savingAgent || !selectedClient}
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full h-8 text-xs"
+                                        >
+                                            {savingAgent ? <Loader2 size={12} className="animate-spin mr-2" /> : <Database size={12} className="mr-2" />}
+                                            Salvar no Banco
+                                        </Button>
+                                        <div className="mt-2 p-3 rounded-lg bg-secondary/20 border border-border/50 text-xs text-muted-foreground max-h-64 overflow-y-auto whitespace-pre-wrap">
+                                            {agentResult}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}
@@ -383,15 +494,36 @@ export function ChatPage() {
                                 </Button>
 
                                 {mapResult.length > 0 && (
-                                    <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
-                                        {mapResult.map((url, i) => (
-                                            <a key={i} href={url} target="_blank" rel="noopener noreferrer"
-                                                className="flex items-center gap-1.5 text-xs text-primary hover:underline py-1 px-2 rounded hover:bg-primary/5 transition-colors">
-                                                <ChevronRight size={10} className="shrink-0" />
-                                                <span className="truncate">{url}</span>
-                                            </a>
-                                        ))}
-                                    </div>
+                                    <>
+                                        <Button
+                                            onClick={async () => {
+                                                setSavingMap(true);
+                                                await saveToKnowledgeBase(
+                                                    "map",
+                                                    `Map: ${mapUrl}`,
+                                                    mapResult.join("\n"),
+                                                    mapUrl
+                                                );
+                                                setSavingMap(false);
+                                            }}
+                                            disabled={savingMap || !selectedClient}
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full h-8 text-xs"
+                                        >
+                                            {savingMap ? <Loader2 size={12} className="animate-spin mr-2" /> : <Database size={12} className="mr-2" />}
+                                            Salvar no Banco
+                                        </Button>
+                                        <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
+                                            {mapResult.map((url, i) => (
+                                                <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                                                    className="flex items-center gap-1.5 text-xs text-primary hover:underline py-1 px-2 rounded hover:bg-primary/5 transition-colors">
+                                                    <ChevronRight size={10} className="shrink-0" />
+                                                    <span className="truncate">{url}</span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}
@@ -431,16 +563,37 @@ export function ChatPage() {
                                 </Button>
 
                                 {crawlResult.length > 0 && (
-                                    <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
-                                        <p className="text-xs text-muted-foreground mb-2">{crawlResult.length} páginas encontradas</p>
-                                        {crawlResult.map((url, i) => (
-                                            <a key={i} href={url} target="_blank" rel="noopener noreferrer"
-                                                className="flex items-center gap-1.5 text-xs text-primary hover:underline py-1 px-2 rounded hover:bg-primary/5 transition-colors">
-                                                <ExternalLink size={10} className="shrink-0" />
-                                                <span className="truncate">{url}</span>
-                                            </a>
-                                        ))}
-                                    </div>
+                                    <>
+                                        <Button
+                                            onClick={async () => {
+                                                setSavingCrawl(true);
+                                                await saveToKnowledgeBase(
+                                                    "crawl",
+                                                    `Crawl: ${crawlUrl} (${crawlResult.length} páginas)`,
+                                                    crawlResult.join("\n"),
+                                                    crawlUrl
+                                                );
+                                                setSavingCrawl(false);
+                                            }}
+                                            disabled={savingCrawl || !selectedClient}
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full h-8 text-xs"
+                                        >
+                                            {savingCrawl ? <Loader2 size={12} className="animate-spin mr-2" /> : <Database size={12} className="mr-2" />}
+                                            Salvar no Banco
+                                        </Button>
+                                        <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
+                                            <p className="text-xs text-muted-foreground mb-2">{crawlResult.length} páginas encontradas</p>
+                                            {crawlResult.map((url, i) => (
+                                                <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                                                    className="flex items-center gap-1.5 text-xs text-primary hover:underline py-1 px-2 rounded hover:bg-primary/5 transition-colors">
+                                                    <ExternalLink size={10} className="shrink-0" />
+                                                    <span className="truncate">{url}</span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         )}

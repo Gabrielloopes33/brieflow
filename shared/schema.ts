@@ -61,6 +61,33 @@ export const analysisConfigs = sqliteTable("analysis_configs", {
   createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
 });
 
+export const knowledgeItems = sqliteTable("knowledge_items", {
+  id: text("id").primaryKey().$default(() => crypto.randomUUID()),
+  userId: text("user_id").notNull(),
+  clientId: text("client_id").notNull().references(() => clients.id, { onDelete: 'cascade' }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  type: text("type").notNull(), // scrape, search, agent, map, crawl
+  sourceUrl: text("source_url"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
+});
+
+export const analyticsTokens = sqliteTable("analytics_tokens", {
+  id: text("id").primaryKey().$default(() => crypto.randomUUID()),
+  userId: text("user_id").notNull(),
+  platform: text("platform").notNull(), // meta, google
+  accountId: text("account_id").notNull(),
+  accountName: text("account_name"),
+  accountType: text("account_type").notNull(), // page, ad_account, mcc
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
+  isActive: integer("is_active", { mode: "boolean" }).default(true).notNull(),
+  isSelected: integer("is_selected", { mode: "boolean" }).default(false).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$default(() => Date.now()),
+});
+
 // === SCHEMAS ===
 
 export const insertClientSchema = createInsertSchema(clients).omit({ id: true, createdAt: true });
@@ -68,6 +95,8 @@ export const insertSourceSchema = createInsertSchema(sources).omit({ id: true, c
 export const insertContentSchema = createInsertSchema(contents).omit({ id: true, scrapedAt: true });
 export const insertBriefSchema = createInsertSchema(briefs).omit({ id: true, createdAt: true });
 export const insertAnalysisConfigSchema = createInsertSchema(analysisConfigs).omit({ id: true, createdAt: true });
+export const insertKnowledgeItemSchema = createInsertSchema(knowledgeItems).omit({ id: true, createdAt: true });
+export const insertAnalyticsTokenSchema = createInsertSchema(analyticsTokens).omit({ id: true, createdAt: true, updatedAt: true });
 
 // === TYPES ===
 
@@ -85,3 +114,9 @@ export type InsertBrief = z.infer<typeof insertBriefSchema>;
 
 export type AnalysisConfig = typeof analysisConfigs.$inferSelect;
 export type InsertAnalysisConfig = z.infer<typeof insertAnalysisConfigSchema>;
+
+export type KnowledgeItem = typeof knowledgeItems.$inferSelect;
+export type InsertKnowledgeItem = z.infer<typeof insertKnowledgeItemSchema>;
+
+export type AnalyticsToken = typeof analyticsTokens.$inferSelect;
+export type InsertAnalyticsToken = z.infer<typeof insertAnalyticsTokenSchema>;

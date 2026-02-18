@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, MessageSquare, Plus, Settings, BarChart2 } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Plus, Settings, BarChart2, Users } from "lucide-react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
     const [location] = useLocation();
@@ -8,6 +8,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const NAV_ITEMS = [
         { icon: LayoutDashboard, label: "Overview", path: "/dashboard" },
         { icon: MessageSquare, label: "Chat", path: "/chat" },
+        { icon: Users, label: "Clientes", path: "/clients" },
         { icon: BarChart2, label: "Analytics", path: "/analytics" },
         { icon: Settings, label: "Settings", path: "/settings" },
     ];
