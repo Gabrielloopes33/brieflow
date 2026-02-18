@@ -32,7 +32,7 @@ class AgentScraper:
         })
 
         # Modelo a ser usado (mais leve e econômico)
-        self.model = "glm-4-flash"  # Modelo rápido e econômico
+        self.model = "glm-4"  # Modelo padrão, testado e funciona
 
     def run_agent(self, prompt: str) -> Optional[str]:
         """
