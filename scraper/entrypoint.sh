@@ -33,6 +33,6 @@ if [ ! -f "$DATABASE_PATH" ]; then
     echo ""
 fi
 
-# Iniciar a API FastAPI com uvicorn
+# Iniciar a API FastAPI com uvicorn (SEM --reload em produção!)
 echo "🌐 Iniciando servidor FastAPI..."
-exec python -m uvicorn main:app --host $API_HOST --port $API_PORT --reload
+exec python -m uvicorn main:app --host $API_HOST --port $API_PORT
