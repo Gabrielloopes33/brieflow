@@ -21,7 +21,9 @@ import {
     ChevronRight,
     User,
     Database,
+    AlertCircle,
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type ToolTab = "scrape" | "search" | "agent" | "map" | "crawl";
 
@@ -287,6 +289,14 @@ export function ChatPage() {
 
                                 {scrapeResult && (
                                     <>
+                                        {!selectedClient && (
+                                            <Alert variant="destructive" className="py-2">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertDescription className="text-xs">
+                                                    Selecione um cliente no topo da página para salvar no banco de dados
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
                                         <Button
                                             onClick={async () => {
                                                 setSavingScrape(true);
@@ -360,6 +370,14 @@ export function ChatPage() {
 
                                 {searchResults.length > 0 && (
                                     <>
+                                        {!selectedClient && (
+                                            <Alert variant="destructive" className="py-2">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertDescription className="text-xs">
+                                                    Selecione um cliente no topo da página para salvar no banco de dados
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
                                         <Button
                                             onClick={async () => {
                                                 setSavingSearch(true);
@@ -417,6 +435,14 @@ export function ChatPage() {
 
                                 {agentResult && (
                                     <>
+                                        {!selectedClient && (
+                                            <Alert variant="destructive" className="py-2">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertDescription className="text-xs">
+                                                    Selecione um cliente no topo da página para salvar no banco de dados
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
                                         <Button
                                             onClick={async () => {
                                                 setSavingAgent(true);
@@ -468,6 +494,14 @@ export function ChatPage() {
 
                                 {mapResult.length > 0 && (
                                     <>
+                                        {!selectedClient && (
+                                            <Alert variant="destructive" className="py-2">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertDescription className="text-xs">
+                                                    Selecione um cliente no topo da página para salvar no banco de dados
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
                                         <Button
                                             onClick={async () => {
                                                 setSavingMap(true);
@@ -537,6 +571,14 @@ export function ChatPage() {
 
                                 {crawlResult.length > 0 && (
                                     <>
+                                        {!selectedClient && (
+                                            <Alert variant="destructive" className="py-2">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertDescription className="text-xs">
+                                                    Selecione um cliente no topo da página para salvar no banco de dados
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
                                         <Button
                                             onClick={async () => {
                                                 setSavingCrawl(true);
