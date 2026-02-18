@@ -146,7 +146,7 @@ export function ChatPage() {
         setAgentLoading(true);
         setAgentResult("");
         try {
-            const data = await apiPost<{ result?: string }>("/api/scraper/agent-anthropic", { prompt: agentPrompt });
+            const data = await apiPost<{ result?: string }>("/api/scraper/agent", { prompt: agentPrompt });
             setAgentResult(data.result || JSON.stringify(data, null, 2));
         } catch {
             setAgentResult("Erro ao executar o agente.");

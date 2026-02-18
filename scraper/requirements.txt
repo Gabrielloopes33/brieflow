@@ -39,13 +39,10 @@ black==23.11.0
 flake8==6.1.0
 
 # ==================== NOVAS APIs ====================
-# Nota: Firecrawl e Z.ai são usados via HTTP direto com requests
-# Não requerem bibliotecas Python específicas
+# OpenAI API - usado para AI Agent
+# API Key configurada no openai_agent_scraper.py
+# Docs: https://platform.openai.com/docs
 
 # Firecrawl API - usado para Search, Map e Crawl
 # API Key configurada nos scrapers individuais
 # Docs: https://www.firecrawl.dev/docs/api
-
-# Z.ai API - usado para AI Agent
-# API Key configurada no agent_scraper.py
-# Docs: https://www.z.ai/docs

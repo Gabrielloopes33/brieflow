@@ -49,7 +49,7 @@ export const briefs = sqliteTable("briefs", {
   suggestedCopy: text("suggested_copy"),
   status: text("status").default('draft').notNull(), // draft, approved, rejected
   createdAt: integer("created_at", { mode: "timestamp" }).$default(() => Date.now()),
-  generatedBy: text("generated_by").default('claude'),
+  generatedBy: text("generated_by").default('openai'),
 });
 
 export const analysisConfigs = sqliteTable("analysis_configs", {

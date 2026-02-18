@@ -25,6 +25,7 @@ from models.database import Database
 from scrapers.scraper_manager import ScraperManager
 from scrapers.web_scraper import WebScraper
 from scrapers.search_scraper import SearchScraper
+from scrapers.openai_agent_scraper import OpenAIAgentScraper
 from scrapers.agent_scraper import AgentScraper
 from scrapers.anthropic_agent_scraper import AnthropicAgentScraper
 from scrapers.site_mapper import SiteMapper
@@ -56,6 +57,7 @@ db = Database()
 scraper_manager = ScraperManager()
 web_scraper = WebScraper()
 search_scraper = SearchScraper()
+openai_agent_scraper = OpenAIAgentScraper()
 agent_scraper = AgentScraper()
 anthropic_agent_scraper = AnthropicAgentScraper()
 site_mapper = SiteMapper()
@@ -437,8 +439,32 @@ async def search_web(request: SearchRequest):
         logger.error(f"❌ Erro na busca: {e}")
         raise HTTPException(status_code=500, detail=f"Erro na busca: {str(e)}")
 
-# AI Agent (Z.ai - Mantido por compatibilidade)
+# AI Agent (OpenAI - Recomendado)
 @app.post("/agent", response_model=AgentResponse)
+async def run_agent_openai(request: AgentRequest):
+    """
+    Executar agente AI usando OpenAI API (recomendado)
+
+    - prompt: Instruções para o agente
+    """
+    try:
+        logger.info(f"🤖 Executando agente OpenAI (modelo: {openai_agent_scraper.model})")
+
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(status_code=400, detail="Prompt é obrigatório")
+
+        result = openai_agent_scraper.run_agent(request.prompt.strip())
+
+        return AgentResponse(result=result)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao executar agente OpenAI: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao executar agente: {str(e)}")
+
+# AI Agent (Z.ai - Legado, mantido por compatibilidade)
+@app.post("/agent-zai", response_model=AgentResponse)
 async def run_agent_zai(request: AgentRequest):
     """
     Executar agente AI usando Z.ai (legado)
@@ -461,11 +487,11 @@ async def run_agent_zai(request: AgentRequest):
         logger.error(f"❌ Erro ao executar agente: Z.ai: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao executar agente: {str(e)}")
 
-# AI Agent (Anthropic - Novo, Recomendado)
+# AI Agent (Anthropic - Mantido por compatibilidade)
 @app.post("/agent-anthropic", response_model=AgentResponse)
 async def run_agent_anthropic(request: AgentRequest):
     """
-    Executar agente AI usando Anthropic API
+    Executar agente AI usando Anthropic API (mantido por compatibilidade)
 
     - prompt: Instruções para o agente
     """

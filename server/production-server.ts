@@ -247,7 +247,7 @@ app.post("/api/clients/:clientId/briefs", (req, res) => {
       id: crypto.randomUUID(),
       ...input,
       createdAt: new Date().toISOString(),
-      generatedBy: 'claude'
+      generatedBy: 'openai'
     };
     briefs.push(newBrief);
     res.status(201).json(newBrief);
@@ -289,7 +289,7 @@ app.post("/api/clients/:clientId/briefs/generate", (req, res) => {
       keyPoints: ["Point 1", "Point 2", "Point 3"],
       suggestedCopy: "Here is a draft copy...",
       status: "draft",
-      generatedBy: "claude",
+      generatedBy: "openai",
       createdAt: new Date().toISOString()
     };
     briefs.push(newBrief);

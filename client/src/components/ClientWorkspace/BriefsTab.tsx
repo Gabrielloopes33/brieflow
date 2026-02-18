@@ -156,7 +156,7 @@ export function BriefsTab({ clientId }: BriefsTabProps) {
                       <Badge variant="outline" className={getStatusColor(brief.status)}>
                         {getStatusLabel(brief.status)}
                       </Badge>
-                      {brief.generatedBy === 'claude' && (
+                      {(brief.generatedBy === 'claude' || brief.generatedBy?.startsWith('openai') || brief.generatedBy?.startsWith('gpt')) && (
                         <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20">
                           <Bot className="w-3 h-3 mr-1" />
                           IA

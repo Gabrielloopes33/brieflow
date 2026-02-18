@@ -1,10 +1,10 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { supabaseAdmin } from "@shared/supabase";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function registerRoutes(
@@ -288,13 +288,13 @@ export async function registerRoutes(
     const { topic } = req.body;
 
     try {
-      const msg = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
+      const msg = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
         max_tokens: 1024,
         messages: [{ role: "user", content: `Generate a content brief for a marketing article about ${topic || "industry trends"}. Return JSON with fields: title, angle, keyPoints (array of strings), suggestedCopy.` }],
       });
 
-      const content = msg.content[0].text;
+      const content = msg.choices[0].message.content;
 
       const { data, error } = await supabaseAdmin
         .from('briefs')
@@ -307,7 +307,7 @@ export async function registerRoutes(
           content_type: "article",
           suggested_copy: "Here is a draft copy...",
           status: "draft",
-          generated_by: "claude",
+          generated_by: "openai-gpt-4o-mini",
         })
         .select()
         .single();
@@ -905,10 +905,20 @@ export async function registerRoutes(
     }
   });
 
-  // AI Agent
+  // AI Agent (OpenAI - Principal)
   app.post("/api/scraper/agent", async (req, res) => {
     try {
       const data = await proxyToScraper('agent', req.body);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // AI Agent (Anthropic - Mantido para compatibilidade)
+  app.post("/api/scraper/agent-anthropic", async (req, res) => {
+    try {
+      const data = await proxyToScraper('agent-anthropic', req.body);
       res.json(data);
     } catch (error: any) {
       res.status(500).json({ message: error.message });

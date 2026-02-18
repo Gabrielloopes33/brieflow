@@ -58,7 +58,7 @@ export function useGenerateBrief() {
           key_points: ['Point 1', 'Point 2', 'Point 3'],
           content_type: 'article',
           status: 'draft',
-          generated_by: 'claude',
+          generated_by: 'openai',
         })
         .select()
         .single();

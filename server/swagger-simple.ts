@@ -216,7 +216,7 @@ const swaggerSpec = {
           generatedBy: {
             type: 'string',
             description: 'Quem gerou a pauta',
-            example: 'claude'
+            example: 'openai-gpt-4o-mini'
           }
         }
       },
