@@ -23,7 +23,7 @@ export function ChatInterface() {
                 ...prev,
                 {
                     role: "assistant",
-                    content: "This is a simulated response. In a real app, I would process your request dynamically."
+                        content: "Esta é uma resposta simulada. Em um app real, eu processaria sua solicitação dinamicamente."
                 }
             ]);
             setIsThinking(false);
@@ -81,7 +81,7 @@ export function ChatInterface() {
                     <input
                         type="text"
                         className="w-full bg-secondary/50 border border-border hover:border-primary/50 focus:border-primary rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
-                        placeholder="Ask anything about your content..."
+                        placeholder="Pergunte qualquer coisa sobre seu conteúdo..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -95,7 +95,7 @@ export function ChatInterface() {
                     </button>
                 </div>
                 <div className="text-center mt-2">
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">AI Content Assistant</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Assistente de Conteúdo IA</span>
                 </div>
             </div>
         </div>

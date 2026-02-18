@@ -231,8 +231,7 @@ export default function Sources() {
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
-                    </div>
-                    <Badge variant="outline" className={getTypeColor(source.type)}>
+                      <Badge variant="outline" className={getTypeColor(source.type)}>
                       {source.type}
                     </Badge>
                   </CardHeader>
@@ -245,11 +244,11 @@ export default function Sources() {
                         className="text-sm text-primary hover:underline flex items-center gap-1"
                       >
                         <ExternalLink className="w-3 h-3" />
-                        Visit Source
+                        Visitar Fonte
                       </a>
                       {source.lastScrapedAt && (
                         <p className="text-xs text-muted-foreground">
-                          Last scraped: {new Date(source.lastScrapedAt).toLocaleDateString()}
+                          Última coleta: {new Date(source.lastScrapedAt).toLocaleDateString()}
                         </p>
                       )}
                     </div>
@@ -293,237 +292,6 @@ export default function Sources() {
           </p>
         </motion.div>
       )}
-    </div>
-  );
-}
-
-    createSource.mutate({
-      clientId: selectedClient,
-      data,
-    });
-
-    form.reset();
-    setIsDialogOpen(false);
-  };
-
-  const handleDeleteSource = (sourceId: string) => {
-    if (!selectedClient) return;
-    deleteSource.mutate({ id: sourceId, clientId: selectedClient });
-  };
-
-  const getSourceIcon = (type: string) => {
-    switch (type) {
-      case "rss":
-        return <Rss className="w-4 h-4" />;
-      case "blog":
-        return <Globe className="w-4 h-4" />;
-      case "news":
-        return <Newspaper className="w-4 h-4" />;
-      default:
-        return <Globe className="w-4 h-4" />;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "rss":
-        return "bg-orange-500/10 text-orange-500 border-orange-500/20";
-      case "blog":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
-      case "news":
-        return "bg-purple-500/10 text-purple-500 border-purple-500/20";
-      default:
-        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
-    }
-  };
-
-  return (
-    <div className="flex min-h-screen bg-muted/20">
-      <Sidebar />
-      <main className="flex-1 ml-64 p-8">
-        <PageHeader 
-          title="Fontes" 
-          description="Gerencie fontes de conteúdo para seus clientes."
-        >
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Fonte
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar Nova Fonte</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="client">Cliente</Label>
-                  <Select value={selectedClient} onValueChange={setSelectedClient}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um cliente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clients?.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome da Fonte</Label>
-                  <Input
-                    id="name"
-                    {...form.register("name")}
-                    placeholder="Exemplo: TechCrunch"
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="url">URL</Label>
-                  <Input
-                    id="url"
-                    {...form.register("url")}
-                    placeholder="https://example.com/feed.xml"
-                  />
-                  {form.formState.errors.url && (
-                    <p className="text-sm text-red-500">{form.formState.errors.url.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="type">Tipo</Label>
-                  <Select 
-                    value={form.watch("type")} 
-                    onValueChange={(value) => form.setValue("type", value as any)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo da fonte" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rss">RSS Feed</SelectItem>
-                      <SelectItem value="blog">Blog</SelectItem>
-                      <SelectItem value="news">News Site</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.type && (
-                    <p className="text-sm text-red-500">{form.formState.errors.type.message}</p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={createSource.isPending}>
-                  {createSource.isPending ? "Adicionando..." : "Adicionar Fonte"}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </PageHeader>
-
-        {/* Client Selector */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Selecionar Cliente</CardTitle>
-            <CardDescription>
-              Escolha um cliente para visualizar e gerenciar suas fontes de conteúdo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Select value={selectedClient} onValueChange={setSelectedClient}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um cliente para ver as fontes" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients?.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-
-        {/* Sources Grid */}
-        {selectedClient && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-display font-bold">
-                Fontes {sources && `(${sources.length})`}
-              </h2>
-            </div>
-
-            {sources && sources.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sources.map((source) => (
-                  <Card key={source.id} className="card-hover border-border/50">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          {getSourceIcon(source.type)}
-                          <CardTitle className="text-lg">{source.name}</CardTitle>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteSource(source.id)}
-                          disabled={deleteSource.isPending}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                      <Badge variant="outline" className={getTypeColor(source.type)}>
-                        {source.type}
-                      </Badge>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          Visit Source
-                        </a>
-                    {source.lastScrapedAt && (
-                      <p className="text-xs text-muted-foreground">
-                        Last scraped: {new Date(source.lastScrapedAt).toLocaleDateString()}
-                      </p>
-                    )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-12 text-center">
-                <Globe className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Nenhuma fonte ainda</h3>
-                <p className="text-muted-foreground mb-4">
-                  Adicione sua primeira fonte de conteúdo para começar a coletar.
-                </p>
-                <Button onClick={() => setIsDialogOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Sua Primeira Fonte
-                </Button>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {!selectedClient && (
-          <Card className="p-12 text-center">
-            <Globe className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Select a client</h3>
-            <p className="text-muted-foreground">
-              Choose a client to view and manage their content sources.
-            </p>
-          </Card>
-        )}
-      </main>
     </div>
   );
 }

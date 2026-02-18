@@ -106,7 +106,7 @@ export default function Briefs() {
                   id="title"
                   value={generateForm.title}
                   onChange={(e) => setGenerateForm({ ...generateForm, title: e.target.value })}
-                  placeholder="Exemplo: Q2 Marketing Campaign Brief"
+                  placeholder="Exemplo: Campanha de Marketing Q2"
                   className="bg-card border-border/50"
                 />
               </div>
@@ -116,7 +116,7 @@ export default function Briefs() {
                   id="description"
                   value={generateForm.description}
                   onChange={(e) => setGenerateForm({ ...generateForm, description: e.target.value })}
-                  placeholder="Descreva o conteudo do brief, objetivos e requisitos..."
+                  placeholder="Descreva o conteúdo da pauta, objetivos e requisitos..."
                   rows={3}
                   className="bg-card border-border/50"
                 />
@@ -127,7 +127,7 @@ export default function Briefs() {
                   id="targetAudience"
                   value={generateForm.targetAudience}
                   onChange={(e) => setGenerateForm({ ...generateForm, targetAudience: e.target.value })}
-                  placeholder="Exemplo: Marketing profissionais de 25-45 anos"
+                  placeholder="Exemplo: Profissionais de marketing de 25-45 anos"
                   className="bg-card border-border/50"
                 />
               </div>
@@ -137,7 +137,7 @@ export default function Briefs() {
                   id="contentGoal"
                   value={generateForm.contentGoal}
                   onChange={(e) => setGenerateForm({ ...generateForm, contentGoal: e.target.value })}
-                  placeholder="O que voce quer alcancar com este conteudo?"
+                  placeholder="O que você quer alcançar com este conteúdo?"
                   rows={2}
                   className="bg-card border-border/50"
                 />
@@ -182,7 +182,7 @@ export default function Briefs() {
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder="Search briefs..."
+                    placeholder="Buscar pautas..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 bg-card border-border/50"
@@ -191,14 +191,14 @@ export default function Briefs() {
                 <div className="w-full sm:w-48">
                   <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Filter by status" />
+                      <SelectValue placeholder="Filtrar por status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="ready">Ready</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="all">Todos os Status</SelectItem>
+                      <SelectItem value="draft">Rascunho</SelectItem>
+                      <SelectItem value="ready">Pronto</SelectItem>
+                      <SelectItem value="in_progress">Em Progresso</SelectItem>
+                      <SelectItem value="completed">Concluído</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -209,7 +209,7 @@ export default function Briefs() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-display font-bold">
-                Content Briefs {filteredBriefs && `(${filteredBriefs.length})`}
+                Pautas de Conteúdo {filteredBriefs && `(${filteredBriefs.length})`}
               </h2>
             </div>
 
@@ -256,7 +256,7 @@ export default function Briefs() {
                           )}
                           {brief.contentGoal && (
                             <p className="text-sm font-medium mt-2">
-                              Target: {brief.contentGoal}
+                              Objetivo: {brief.contentGoal}
                             </p>
                           )}
                         </CardContent>
@@ -277,9 +277,9 @@ export default function Briefs() {
                   {searchQuery || filterStatus !== "all" ? "Nenhuma pauta encontrada" : "Nenhuma pauta ainda"}
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchQuery || filterStatus !== "all"
+                    {searchQuery || filterStatus !== "all"
                     ? "Tente ajustar sua busca ou filtros para encontrar o que procura."
-                    : "Pautas aparecerao aqui assim que voce gerar seus primeiros briefings de conteudo."
+                    : "Pautas aparecerão aqui assim que você gerar seus primeiros briefings de conteúdo."
                 }
                 </p>
               </motion.div>

@@ -91,10 +91,10 @@ export default function Contents() {
                       <SelectValue placeholder="Filtrar por tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="all">Todos os Tipos</SelectItem>
                       <SelectItem value="RSS">RSS</SelectItem>
                       <SelectItem value="BLOG">Blog</SelectItem>
-                      <SelectItem value="NEWS">News</SelectItem>
+                      <SelectItem value="NEWS">Notícias</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -169,13 +169,13 @@ export default function Contents() {
                         </p>
                         {content.keyPoints && content.keyPoints.length > 0 && (
                           <div className="space-y-2">
-                            <h4 className="font-medium text-sm">Key Points:</h4>
+                            <h4 className="font-medium text-sm">Pontos Principais:</h4>
                             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                               {content.keyPoints.slice(0, 3).map((point, idx) => (
                                 <li key={idx}>{point}</li>
                               ))}
                               {content.keyPoints.length > 3 && (
-                                <li className="text-primary">...and {content.keyPoints.length - 3} more</li>
+                                <li className="text-primary">...e mais {content.keyPoints.length - 3}</li>
                               )}
                             </ul>
                           </div>
@@ -183,7 +183,7 @@ export default function Contents() {
                         {content.analysis && (
                           <div className="mt-3 pt-3 border-t">
                             <p className="text-sm">
-                              <span className="font-medium">Relevance:</span> {content.analysis.relevanceScore}/10
+                              <span className="font-medium">Relevância:</span> {content.analysis.relevanceScore}/10
                             </p>
                             {content.analysis.topics && (
                               <div className="flex flex-wrap gap-1 mt-2">
@@ -210,12 +210,12 @@ export default function Contents() {
               >
                 <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">
-                  {searchQuery || filterType !== "all" ? "No matching content" : "No content collected yet"}
+                  {searchQuery || filterType !== "all" ? "Nenhum conteúdo encontrado" : "Nenhum conteúdo coletado ainda"}
                 </h3>
                 <p className="text-muted-foreground mb-4">
                   {searchQuery || filterType !== "all"
-                    ? "Try adjusting your search or filters to find what you're looking for."
-                    : "Content will appear here once sources are scraped and analyzed."}
+                    ? "Tente ajustar sua busca ou filtros para encontrar o que procura."
+                    : "O conteúdo aparecerá aqui assim que as fontes forem coletadas e analisadas."}
                 </p>
               </motion.div>
             )}

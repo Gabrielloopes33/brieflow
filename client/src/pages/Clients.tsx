@@ -174,7 +174,7 @@ export default function Clients() {
                 <FormItem>
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
-                    <Input placeholder="Brief description..." {...field} value={field.value || ""} />
+                    <Input placeholder="Descrição breve..." {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

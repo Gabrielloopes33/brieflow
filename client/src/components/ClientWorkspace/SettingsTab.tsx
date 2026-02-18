@@ -69,7 +69,7 @@ export function SettingsTab({ clientId }: SettingsTabProps) {
               <Textarea
                 id="client-description"
                 defaultValue={client?.description || ""}
-                placeholder="Brief description..."
+                placeholder="Descrição breve..."
                 rows={2}
               />
             </div>

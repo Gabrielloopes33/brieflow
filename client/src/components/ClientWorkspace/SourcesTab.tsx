@@ -144,7 +144,7 @@ export function SourcesTab({ clientId }: SourcesTabProps) {
                   <SelectContent>
                     <SelectItem value="rss">RSS Feed</SelectItem>
                     <SelectItem value="blog">Blog</SelectItem>
-                    <SelectItem value="news">News Site</SelectItem>
+                      <SelectItem value="news">Site de Notícias</SelectItem>
                   </SelectContent>
                 </Select>
                 {form.formState.errors.type && (
@@ -188,11 +188,11 @@ export function SourcesTab({ clientId }: SourcesTabProps) {
                       className="text-sm text-primary hover:underline flex items-center gap-1"
                     >
                       <ExternalLink className="w-3 h-3" />
-                      Visit Source
+                      Visitar Fonte
                     </a>
                     {source.lastScrapedAt && (
                       <p className="text-xs text-muted-foreground">
-                        Last scraped: {new Date(source.lastScrapedAt).toLocaleDateString('pt-BR')}
+                        Última coleta: {new Date(source.lastScrapedAt).toLocaleDateString('pt-BR')}
                       </p>
                     )}
                   </div>

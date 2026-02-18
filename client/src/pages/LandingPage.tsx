@@ -16,17 +16,17 @@ export function LandingPage() {
                         <span className="font-display font-bold text-xl tracking-tight">BriefFlow</span>
                     </div>
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-                        <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-                        <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
+                        <a href="#features" className="hover:text-foreground transition-colors">Recursos</a>
+                        <a href="#pricing" className="hover:text-foreground transition-colors">Preços</a>
                         <a href="#docs" className="hover:text-foreground transition-colors">Docs</a>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link href="/dashboard">
-                            <a className="text-sm font-medium hover:text-primary transition-colors">Login</a>
+                            <a className="text-sm font-medium hover:text-primary transition-colors">Entrar</a>
                         </Link>
                         <Link href="/dashboard">
                             <a className="bg-primary hover:bg-primary/90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all shadow-[0_0_20px_-5px_rgba(250,93,25,0.5)] hover:shadow-[0_0_25px_-5px_rgba(250,93,25,0.6)]">
-                                Get Started
+                                Começar Agora
                             </a>
                         </Link>
                     </div>
@@ -43,26 +43,26 @@ export function LandingPage() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                         </span>
-                        V2.0 NOW LIVE
+                        V2.0 NO AR
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 fade-in [animation-delay:0.1s]">
-                        Turn data into <br />
-                        <span className="text-primary">Engaging Content</span>
+                        Transforme dados em <br />
+                        <span className="text-primary">Conteúdo Engajador</span>
                     </h1>
 
                     <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 fade-in [animation-delay:0.2s]">
-                        BriefFlow is the AI-powered workspace for modern creators. Connect your metrics, chat with your data, and generate viral content in seconds.
+                        BriefFlow é o workspace com IA para criadores modernos. Conecte suas métricas, converse com seus dados e gere conteúdo viral em segundos.
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-4 fade-in [animation-delay:0.3s]">
                         <Link href="/dashboard">
                             <a className="w-full md:w-auto h-12 px-8 rounded-lg bg-white text-black font-semibold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
-                                Start Creating Free <ArrowRight className="w-4 h-4" />
+                                Começar Grátis <ArrowRight className="w-4 h-4" />
                             </a>
                         </Link>
                         <button className="w-full md:w-auto h-12 px-8 rounded-lg border border-border bg-secondary/50 text-foreground font-medium hover:bg-secondary transition-colors">
-                            View Documentation
+                            Ver Documentação
                         </button>
                     </div>
                 </div>
@@ -76,27 +76,27 @@ export function LandingPage() {
                             <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary">
                                 <Bot size={24} />
                             </div>
-                            <h3 className="text-xl font-display font-bold mb-2">AI Chat Assistant</h3>
+                            <h3 className="text-xl font-display font-bold mb-2">Assistente de Chat IA</h3>
                             <p className="text-muted-foreground">
-                                Brainstorm ideas, draft captions, and refine your voice with our context-aware AI model tailored for creators.
+                                Brainstorm de ideias, crie legendas e refine sua voz com nosso modelo de IA contextualizado para criadores.
                             </p>
                         </div>
                         <div className="feature-card p-6 rounded-2xl">
                             <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary">
                                 <Database size={24} />
                             </div>
-                            <h3 className="text-xl font-display font-bold mb-2">Reference Database</h3>
+                            <h3 className="text-xl font-display font-bold mb-2">Base de Referências</h3>
                             <p className="text-muted-foreground">
-                                Store and organize your best performing content, competitor analysis, and inspiration links in one place.
+                                Armazene e organize seu melhor conteúdo, análise de concorrentes e links de inspiração em um só lugar.
                             </p>
                         </div>
                         <div className="feature-card p-6 rounded-2xl">
                             <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4 text-primary">
                                 <Zap size={24} />
                             </div>
-                            <h3 className="text-xl font-display font-bold mb-2">Smart Metrics</h3>
+                            <h3 className="text-xl font-display font-bold mb-2">Métricas Inteligentes</h3>
                             <p className="text-muted-foreground">
-                                Connect Meta & Google Analytics to see real-time performance and get actionable growth insights.
+                                Conecte Meta e Google Analytics para ver performance em tempo real e obter insights acionáveis de crescimento.
                             </p>
                         </div>
                     </div>
@@ -111,7 +111,7 @@ export function LandingPage() {
                         <span className="font-display font-bold text-lg">BriefFlow</span>
                     </div>
                     <div className="text-muted-foreground text-sm">
-                        © 2025 BriefFlow Inc. All rights reserved.
+                        © 2025 BriefFlow Inc. Todos os direitos reservados.
                     </div>
                 </div>
             </footer>

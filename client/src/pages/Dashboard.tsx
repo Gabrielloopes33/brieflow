@@ -13,28 +13,28 @@ export function Dashboard() {
         {/* Mini Metrics Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
           <MetricCard
-            title="Insta Reach"
+            title="Alcance Insta"
             value={MOCK_METRICS.instagram.reach}
             change={MOCK_METRICS.instagram.growth}
             trend="up"
             icon={<Instagram size={16} />}
           />
           <MetricCard
-            title="FB Engagement"
+            title="Engajamento FB"
             value={MOCK_METRICS.facebook.engagement}
             change={MOCK_METRICS.facebook.growth}
             trend="down"
             icon={<Facebook size={16} />}
           />
           <MetricCard
-            title="Google Clicks"
+            title="Cliques Google"
             value={MOCK_METRICS.google.clicks}
             change="+12%"
             trend="up"
             icon={<Search size={16} />}
           />
           <MetricCard
-            title="Total Posts"
+            title="Total de Posts"
             value="142"
             change="+5"
             trend="neutral"
@@ -57,29 +57,29 @@ export function Dashboard() {
             <div className="bg-card border border-border p-5 rounded-xl">
               <h3 className="font-display font-semibold mb-3 flex items-center">
                 <SparklesIcon className="w-4 h-4 mr-2 text-primary" />
-                Quick Actions
+                Ações Rápidas
               </h3>
               <div className="space-y-2">
                 <button className="w-full text-left px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary hover:text-white text-sm transition-colors border border-transparent hover:border-border">
-                  ✨ Generate Post Idea
+                  ✨ Gerar Ideia de Post
                 </button>
                 <button className="w-full text-left px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary hover:text-white text-sm transition-colors border border-transparent hover:border-border">
-                  📊 Audit Competitor
+                  📊 Auditar Concorrente
                 </button>
                 <button className="w-full text-left px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary hover:text-white text-sm transition-colors border border-transparent hover:border-border">
-                  📅 Schedule Content
+                  📅 Agendar Conteúdo
                 </button>
               </div>
             </div>
 
             <div className="bg-card border border-border p-5 rounded-xl flex-1">
-              <h3 className="font-display font-semibold mb-3">Recent Knowledge</h3>
+              <h3 className="font-display font-semibold mb-3">Conhecimentos Recentes</h3>
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="p-3 rounded-lg border border-border bg-background/50 hover:border-primary/50 transition-colors cursor-pointer group">
-                    <div className="text-xs text-primary mb-1">REFERENCE</div>
-                    <div className="font-medium text-sm group-hover:text-primary transition-colors">How to use AI for SEO in 2025</div>
-                    <div className="text-xs text-muted-foreground mt-2">Added 2 days ago</div>
+                    <div className="text-xs text-primary mb-1">REFERÊNCIA</div>
+                    <div className="font-medium text-sm group-hover:text-primary transition-colors">Como usar IA para SEO em 2025</div>
+                    <div className="text-xs text-muted-foreground mt-2">Adicionado há 2 dias</div>
                   </div>
                 ))}
               </div>
