@@ -135,9 +135,3 @@ app.use((req, res, next) => {
     },
   );
 })();
-origin: [
-  'http://localhost:5000',
-  'https://briefflow2.netlify.app',  // ADICIONAR
-  'https://*.netlify.app',           // ADICIONAR
-  process.env.FRONTEND_URL
-]
