@@ -1,9 +1,11 @@
+version: '3.8'
+
 services:
   app:
-    image: node:20-alpine
-    working_dir: /app
-    command: >
-      sh -c "npm ci && npm install esbuild && npm run build && npm run start"
+    build:
+      context: .
+      dockerfile: Dockerfile.prebuilt
+    image: briefflow-app:latest
     ports:
       - target: 5000
         published: 5000
@@ -39,11 +41,7 @@ services:
       # Services
       SCRAPER_URL: ${SCRAPER_URL}
     volumes:
-      - type: bind
-        source: /opt/brieflow
-        target: /app
       - app_logs:/app/logs
-      - /app/node_modules
     networks:
       - brieflow-network
     depends_on:
