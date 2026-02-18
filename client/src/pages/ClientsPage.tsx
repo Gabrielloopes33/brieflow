@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
-import { useClients } from "@/hooks/use-clients";
+import { useClients, useCreateClient } from "@/hooks/use-clients";
 import { useKnowledgeItems, useDeleteKnowledgeItem } from "@/hooks/use-knowledge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { 
     Users, 
     BookOpen, 
@@ -18,6 +26,8 @@ import {
     Bot,
     Map,
     Layers,
+    Plus,
+    Loader2,
 } from "lucide-react";
 
 interface Client {
@@ -72,9 +82,12 @@ export function ClientsPage() {
             <div className="flex h-full gap-6">
                 {/* Client List */}
                 <div className="flex-1">
-                    <div className="mb-6">
-                        <h1 className="text-2xl font-display font-bold text-gradient mb-2">Clientes</h1>
-                        <p className="text-muted-foreground text-sm">Gerencie seus clientes e suas bases de conhecimento</p>
+                    <div className="mb-6 flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-display font-bold text-gradient mb-2">Clientes</h1>
+                            <p className="text-muted-foreground text-sm">Gerencie seus clientes e suas bases de conhecimento</p>
+                        </div>
+                        <CreateClientDialog />
                     </div>
 
                     {clientsLoading ? (
@@ -84,7 +97,8 @@ export function ClientsPage() {
                     ) : clients?.length === 0 ? (
                         <div className="text-center py-12">
                             <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                            <p className="text-muted-foreground">Nenhum cliente cadastrado</p>
+                            <p className="text-muted-foreground mb-4">Nenhum cliente cadastrado</p>
+                            <CreateClientDialog />
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -222,5 +236,155 @@ export function ClientsPage() {
                 )}
             </div>
         </AppShell>
+    );
+}
+
+// Schema de validação
+const clientSchema = z.object({
+    name: z.string().min(1, "Nome é obrigatório"),
+    niche: z.string().optional(),
+    description: z.string().optional(),
+    target_audience: z.string().optional(),
+});
+
+type ClientFormData = z.infer<typeof clientSchema>;
+
+function CreateClientDialog() {
+    const [open, setOpen] = useState(false);
+    const { mutate, isPending } = useCreateClient();
+    
+    const form = useForm<ClientFormData>({
+        resolver: zodResolver(clientSchema),
+        defaultValues: {
+            name: "",
+            niche: "",
+            description: "",
+            target_audience: "",
+        },
+    });
+
+    const onSubmit = (data: ClientFormData) => {
+        mutate(data, {
+            onSuccess: () => {
+                setOpen(false);
+                form.reset();
+            },
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adicionar Cliente
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>Adicionar Novo Cliente</DialogTitle>
+                    <DialogDescription>
+                        Crie uma área de trabalho para um novo cliente.
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Nome do Cliente *</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            placeholder="Ex: Acme Corp" 
+                                            {...field} 
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="niche"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Nicho / Setor</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            placeholder="Ex: SaaS, E-commerce, etc." 
+                                            {...field} 
+                                            value={field.value || ""}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Descrição</FormLabel>
+                                    <FormControl>
+                                        <Textarea 
+                                            placeholder="Descreva brevemente o cliente..."
+                                            {...field}
+                                            value={field.value || ""}
+                                            rows={3}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="target_audience"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Público-Alvo</FormLabel>
+                                    <FormControl>
+                                        <Textarea 
+                                            placeholder="Descreva o público-alvo deste cliente..."
+                                            {...field}
+                                            value={field.value || ""}
+                                            rows={2}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="flex gap-3 pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => setOpen(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                className="flex-1"
+                                disabled={isPending}
+                            >
+                                {isPending ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Criando...
+                                    </>
+                                ) : (
+                                    "Criar Cliente"
+                                )}
+                            </Button>
+                        </div>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
     );
 }
