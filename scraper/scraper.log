@@ -1,0 +1,95 @@
+2026-02-18 14:50:51,354 | INFO     | root:info:33 -  Banco de dados: ..\data\briefflow.db
+2026-02-18 14:50:51,355 | INFO     | root:info:33 -  Tabelas inicializadas com sucesso
+2026-02-18 14:50:51,356 | INFO     | root:info:33 -  Banco de dados: ..\data\briefflow.db
+2026-02-18 14:50:51,357 | INFO     | root:info:33 -  Tabelas inicializadas com sucesso
+2026-02-18 14:50:51,358 | INFO     | root:info:33 -  Gerenciador de scrapers inicializado
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f680' in position 56: character maps to <undefined>
+Call stack:
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 61, in <module>
+    main()
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 28, in main
+    logger.info("\U0001f680 Iniciando BriefFlow Content Scraper")
+Message: '\U0001f680 Iniciando BriefFlow Content Scraper'
+Arguments: ()
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2705' in position 56: character maps to <undefined>
+Call stack:
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 61, in <module>
+    main()
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 38, in main
+    logger.info("\u2705 Configuração validada com sucesso")
+Message: '\u2705 Configuração validada com sucesso'
+Arguments: ()
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4c2' in position 56: character maps to <undefined>
+Call stack:
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 61, in <module>
+    main()
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 39, in main
+    logger.info(f"\U0001f4c2 Diretório de trabalho: {Path.cwd()}")
+Message: '\U0001f4c2 Diretório de trabalho: C:\\Users\\gmora\\Desktop\\developer\\BriefFlow\\PLANEJAMENTO\\Content-Generator\\scraper'
+Arguments: ()
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 56-57: character maps to <undefined>
+Call stack:
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 61, in <module>
+    main()
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 40, in main
+    logger.info(f"\U0001f5c4\ufe0f  Banco de dados: {config.get_database_path()}")
+Message: '\U0001f5c4\ufe0f  Banco de dados: ..\\data\\briefflow.db'
+Arguments: ()
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gmora\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f310' in position 56: character maps to <undefined>
+Call stack:
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 61, in <module>
+    main()
+  File "C:\Users\gmora\Desktop\developer\BriefFlow\PLANEJAMENTO\Content-Generator\scraper\main.py", line 45, in main
+    logger.info("\U0001f310 Iniciando servidor API do scraper")
+Message: '\U0001f310 Iniciando servidor API do scraper'
+Arguments: ()
+INFO:     Started server process [11756]
+INFO:     Waiting for application startup.
+2026-02-18 14:50:51,517 | INFO     | root:info:33 -  BriefFlow Content Scraper API iniciada
+2026-02-18 14:50:51,517 | INFO     | root:info:33 -  Banco de dados: ..\data\briefflow.db
+2026-02-18 14:50:51,517 | INFO     | root:info:33 -  API do BriefFlow: http://localhost:5001
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8000): [winerror 10048] normalmente é permitida apenas uma utilização de cada endereço de soquete (protocolo/endereço de rede/porta)
+INFO:     Waiting for application shutdown.
+2026-02-18 14:50:51,517 | INFO     | root:info:33 -  BriefFlow Content Scraper API desligada
+INFO:     Application shutdown complete.

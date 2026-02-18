@@ -134,3 +134,59 @@ class TaskStatusResponse(BaseModel):
     started_at: Optional[datetime] = Field(None, description="Data de início")
     estimated_completion: Optional[datetime] = Field(None, description="Data estimada de conclusão")
     error_message: Optional[str] = Field(None, description="Mensagem de erro se houver")
+
+# ==================== NOVOS MODELOS PARA API DO FRONTEND ====================
+
+class ScrapeRequest(BaseModel):
+    """Requisição para scrape de URL com formatos específicos"""
+    url: str = Field(..., description="URL para scraping")
+    formats: List[str] = Field(default=["markdown"], description="Formatos: markdown, html, links")
+
+class ScrapeResponse(BaseModel):
+    """Resposta do scrape"""
+    url: str = Field(..., description="URL processada")
+    markdown: Optional[str] = Field(None, description="Conteúdo em Markdown")
+    html: Optional[str] = Field(None, description="Conteúdo em HTML")
+    links: Optional[List[str]] = Field(None, description="Lista de links encontrados")
+
+class SearchRequest(BaseModel):
+    """Requisição para busca web"""
+    query: str = Field(..., description="Termo de busca")
+    numResults: int = Field(default=5, ge=1, le=50, description="Número de resultados")
+
+class SearchResult(BaseModel):
+    """Resultado de busca"""
+    title: str = Field(..., description="Título do resultado")
+    url: str = Field(..., description="URL do resultado")
+    description: str = Field(..., description="Descrição do resultado")
+
+class SearchResponse(BaseModel):
+    """Resposta da busca"""
+    results: List[SearchResult] = Field(default_factory=list, description="Lista de resultados")
+
+class AgentRequest(BaseModel):
+    """Requisição para agente AI"""
+    prompt: str = Field(..., description="Instruções para o agente")
+
+class AgentResponse(BaseModel):
+    """Resposta do agente"""
+    result: Optional[str] = Field(None, description="Resultado gerado pelo agente")
+
+class MapRequest(BaseModel):
+    """Requisição para mapeamento de site"""
+    url: str = Field(..., description="URL do site")
+
+class MapResponse(BaseModel):
+    """Resposta do mapeamento"""
+    links: List[str] = Field(default_factory=list, description="Lista de URLs encontradas")
+    urls: List[str] = Field(default_factory=list, description="Campo alternativo para compatibilidade")
+
+class CrawlRequest(BaseModel):
+    """Requisição para crawling de site"""
+    url: str = Field(..., description="URL inicial")
+    maxPages: int = Field(default=10, ge=1, le=100, description="Máximo de páginas")
+
+class CrawlResponse(BaseModel):
+    """Resposta do crawling"""
+    pages: List[str] = Field(default_factory=list, description="Lista de URLs visitadas")
+    urls: List[str] = Field(default_factory=list, description="Campo alternativo para compatibilidade")

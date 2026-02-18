@@ -16,10 +16,18 @@ sys.path.insert(0, str(parent_dir))
 
 from models.scraper import (
     ScrapingRequest, ScrapingResponse, TaskStatusResponse,
-    Source, Client, ScrapedContent, SourceType
+    Source, Client, ScrapedContent, SourceType,
+    ScrapeRequest, ScrapeResponse, SearchRequest, SearchResponse,
+    AgentRequest, AgentResponse, MapRequest, MapResponse,
+    CrawlRequest, CrawlResponse
 )
 from models.database import Database
 from scrapers.scraper_manager import ScraperManager
+from scrapers.web_scraper import WebScraper
+from scrapers.search_scraper import SearchScraper
+from scrapers.agent_scraper import AgentScraper
+from scrapers.site_mapper import SiteMapper
+from scrapers.web_crawler import WebCrawler
 from utils.config import Config
 from utils.logger import setup_logger
 
@@ -45,6 +53,11 @@ app.add_middleware(
 # Inicializar componentes
 db = Database()
 scraper_manager = ScraperManager()
+web_scraper = WebScraper()
+search_scraper = SearchScraper()
+agent_scraper = AgentScraper()
+site_mapper = SiteMapper()
+web_crawler = WebCrawler()
 
 # Endpoint para health check
 @app.get("/")
@@ -300,7 +313,11 @@ async def get_api_info():
             "Web scraping genérico",
             "Agendamento de tarefas",
             "Monitoramento de progresso",
-            "Teste de fontes"
+            "Teste de fontes",
+            "Web search (Firecrawl)",
+            "AI Agent (Z.ai)",
+            "Site mapping",
+            "Web crawling"
         ],
         "endpoints": {
             "health": "/health",
@@ -310,9 +327,186 @@ async def get_api_info():
             "task_status": "/tasks/{task_id}",
             "scrape_url": "/scrape-url",
             "test_source": "/test-source",
-            "contents": "/clients/{client_id}/contents"
+            "contents": "/clients/{client_id}/contents",
+            "scrape": "/scrape (nova API)",
+            "search": "/search",
+            "agent": "/agent",
+            "map": "/map",
+            "crawl": "/crawl"
         }
     }
+
+# ==================== NOVOS ENDPOINTS DO FRONTEND ====================
+
+# Scrape URL com formatos específicos
+@app.post("/scrape", response_model=ScrapeResponse)
+async def scrape_url(request: ScrapeRequest):
+    """
+    Fazer scraping de URL com formatos específicos usando Firecrawl
+
+    - url: URL para scraping
+    - formats: Lista de formatos desejados (markdown, html, links)
+    """
+    try:
+        logger.info(f"📖 Scraping URL: {request.url} (formats: {request.formats})")
+
+        if not request.url or not request.url.strip():
+            raise HTTPException(status_code=400, detail="URL é obrigatória")
+
+        # Usar Firecrawl API diretamente
+        import requests
+        scrape_url = "https://api.firecrawl.dev/v1/scrape"
+
+        payload = {
+            "url": request.url.strip(),
+            "formats": request.formats or ["markdown"]
+        }
+
+        headers = {
+            "Authorization": "Bearer fc-c4ff34f7d0644bab97f5d82a65148880",
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(scrape_url, json=payload, headers=headers, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+
+        if not data.get("success"):
+            raise HTTPException(status_code=500, detail="Falha no scraping via Firecrawl")
+
+        # Extrair dados da resposta
+        scrape_data = data.get("data", {})
+        response_obj = ScrapeResponse(url=request.url)
+
+        # Markdown
+        if 'markdown' in request.formats or not request.formats:
+            response_obj.markdown = scrape_data.get("markdown")
+
+        # HTML
+        if 'html' in request.formats:
+            # Firecrawl não retorna HTML por padrão, tentar obter do markdown
+            html_content = scrape_data.get("html")
+            if not html_content and response_obj.markdown:
+                # Converter markdown para HTML simples
+                html_content = f"<div class='content'>{response_obj.markdown.replace(chr(10), '<br>')}</div>"
+            response_obj.html = html_content
+
+        # Links
+        if 'links' in request.formats:
+            import re
+            markdown = scrape_data.get("markdown", "")
+            links = re.findall(r'https?://[^\s\)\]\n]+', markdown)
+            response_obj.links = list(set(links))  # Remover duplicatas
+
+        logger.info(f"✅ Scraping concluído: {request.url}")
+        return response_obj
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"❌ Erro na requisição para Firecrawl: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro de comunicação: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao fazer scraping da URL {request.url}: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao fazer scraping: {str(e)}")
+
+# Web Search
+@app.post("/search", response_model=SearchResponse)
+async def search_web(request: SearchRequest):
+    """
+    Fazer busca na web usando Firecrawl
+
+    - query: Termo de busca
+    - numResults: Número de resultados (1-50)
+    """
+    try:
+        logger.info(f"🔍 Buscando: {request.query} (results: {request.numResults})")
+
+        if not request.query or not request.query.strip():
+            raise HTTPException(status_code=400, detail="Query é obrigatória")
+
+        results = search_scraper.search(request.query.strip(), request.numResults)
+
+        return SearchResponse(results=results)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro na busca: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro na busca: {str(e)}")
+
+# AI Agent
+@app.post("/agent", response_model=AgentResponse)
+async def run_agent(request: AgentRequest):
+    """
+    Executar agente AI usando Z.ai
+
+    - prompt: Instruções para o agente
+    """
+    try:
+        logger.info(f"🤖 Executando agente: {request.prompt[:100]}...")
+
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(status_code=400, detail="Prompt é obrigatório")
+
+        result = agent_scraper.run_agent(request.prompt.strip())
+
+        return AgentResponse(result=result)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao executar agente: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao executar agente: {str(e)}")
+
+# Map Site
+@app.post("/map", response_model=MapResponse)
+async def map_site(request: MapRequest):
+    """
+    Mapear estrutura de URLs de um site usando Firecrawl
+
+    - url: URL do site
+    """
+    try:
+        logger.info(f"🗺️  Mapeando site: {request.url}")
+
+        if not request.url or not request.url.strip():
+            raise HTTPException(status_code=400, detail="URL é obrigatória")
+
+        result = site_mapper.map_site(request.url.strip())
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao mapear site: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao mapear site: {str(e)}")
+
+# Crawl Site
+@app.post("/crawl", response_model=CrawlResponse)
+async def crawl_site(request: CrawlRequest):
+    """
+    Fazer crawling de um site usando Firecrawl
+
+    - url: URL inicial
+    - maxPages: Máximo de páginas (1-100)
+    """
+    try:
+        logger.info(f"🕷️  Crawling site: {request.url} (max pages: {request.maxPages})")
+
+        if not request.url or not request.url.strip():
+            raise HTTPException(status_code=400, detail="URL é obrigatória")
+
+        result = web_crawler.crawl_site(request.url.strip(), request.maxPages)
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro no crawling: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro no crawling: {str(e)}")
 
 # Inicialização
 @app.on_event("startup")

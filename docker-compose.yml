@@ -20,6 +20,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - SESSION_SECRET=${SESSION_SECRET}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - SCRAPER_URL=http://scraper:8000
     depends_on:
       postgres:
         condition: service_healthy
@@ -172,6 +173,8 @@ services:
       - API_HOST=0.0.0.0
       - API_PORT=8000
       - SCRAPER_INTERVAL=3600
+      - FIRECRAWL_API_KEY=fc-c4ff34f7d0644bab97f5d82a65148880
+      - ZAI_API_KEY=5c03177d5d75466293543d34ce3f58d6.Z6AhWru7sTn9I47I
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs

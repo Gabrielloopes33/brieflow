@@ -40,3 +40,15 @@ playwright==1.40.0
 pytest==7.4.3
 black==23.11.0
 flake8==6.1.0
+
+# ==================== NOVAS APIs ====================
+# Nota: Firecrawl e Z.ai são usados via HTTP direto com requests
+# Não requerem bibliotecas Python específicas
+
+# Firecrawl API - usado para Search, Map e Crawl
+# API Key configurada nos scrapers individuais
+# Docs: https://www.firecrawl.dev/docs/api
+
+# Z.ai API - usado para AI Agent
+# API Key configurada no agent_scraper.py
+# Docs: https://www.z.ai/docs

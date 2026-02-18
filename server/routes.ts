@@ -858,5 +858,82 @@ export async function registerRoutes(
     }
   });
 
+  // ==================== PROXY PARA SCRAPER PYTHON ====================
+
+  const SCRAPER_BASE_URL = process.env.SCRAPER_URL || 'http://localhost:8000';
+
+  async function proxyToScraper(path: string, body?: any) {
+    try {
+      const response = await fetch(`${SCRAPER_BASE_URL}/${path}`, {
+        method: body ? 'POST' : 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || data.detail || 'Error from scraper');
+      }
+
+      return data;
+    } catch (error: any) {
+      console.error(`Scraper proxy error (${path}):`, error);
+      throw new Error(error.message || 'Failed to reach scraper');
+    }
+  }
+
+  // Scrape URL com formatos específicos
+  app.post("/api/scraper/scrape", async (req, res) => {
+    try {
+      const data = await proxyToScraper('scrape', req.body);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Web Search
+  app.post("/api/scraper/search", async (req, res) => {
+    try {
+      const data = await proxyToScraper('search', req.body);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // AI Agent
+  app.post("/api/scraper/agent", async (req, res) => {
+    try {
+      const data = await proxyToScraper('agent', req.body);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Map Site
+  app.post("/api/scraper/map", async (req, res) => {
+    try {
+      const data = await proxyToScraper('map', req.body);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Crawl Site
+  app.post("/api/scraper/crawl", async (req, res) => {
+    try {
+      const data = await proxyToScraper('crawl', req.body);
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return httpServer;
 }
