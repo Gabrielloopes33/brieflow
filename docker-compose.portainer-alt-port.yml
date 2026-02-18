@@ -5,7 +5,7 @@ services:
     image: node:18-alpine
     working_dir: /app
     command: >
-      sh -c "npm ci && npm run build && npm run start:production"
+      sh -c "npm ci && npm run build && npm run start"
     ports:
       - target: 5000
         published: 5000
