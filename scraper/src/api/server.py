@@ -26,6 +26,7 @@ from scrapers.scraper_manager import ScraperManager
 from scrapers.web_scraper import WebScraper
 from scrapers.search_scraper import SearchScraper
 from scrapers.agent_scraper import AgentScraper
+from scrapers.anthropic_agent_scraper import AnthropicAgentScraper
 from scrapers.site_mapper import SiteMapper
 from scrapers.web_crawler import WebCrawler
 from utils.config import Config
@@ -56,6 +57,7 @@ scraper_manager = ScraperManager()
 web_scraper = WebScraper()
 search_scraper = SearchScraper()
 agent_scraper = AgentScraper()
+anthropic_agent_scraper = AnthropicAgentScraper()
 site_mapper = SiteMapper()
 web_crawler = WebCrawler()
 
@@ -435,16 +437,16 @@ async def search_web(request: SearchRequest):
         logger.error(f"❌ Erro na busca: {e}")
         raise HTTPException(status_code=500, detail=f"Erro na busca: {str(e)}")
 
-# AI Agent
+# AI Agent (Z.ai - Mantido por compatibilidade)
 @app.post("/agent", response_model=AgentResponse)
-async def run_agent(request: AgentRequest):
+async def run_agent_zai(request: AgentRequest):
     """
-    Executar agente AI usando Z.ai
+    Executar agente AI usando Z.ai (legado)
 
     - prompt: Instruções para o agente
     """
     try:
-        logger.info(f"🤖 Executando agente: {request.prompt[:100]}...")
+        logger.info(f"🤖 Executando agente Z.ai: {request.prompt[:100]}...")
 
         if not request.prompt or not request.prompt.strip():
             raise HTTPException(status_code=400, detail="Prompt é obrigatório")
@@ -456,7 +458,31 @@ async def run_agent(request: AgentRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Erro ao executar agente: {e}")
+        logger.error(f"❌ Erro ao executar agente: Z.ai: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao executar agente: {str(e)}")
+
+# AI Agent (Anthropic - Novo, Recomendado)
+@app.post("/agent-anthropic", response_model=AgentResponse)
+async def run_agent_anthropic(request: AgentRequest):
+    """
+    Executar agente AI usando Anthropic API
+
+    - prompt: Instruções para o agente
+    """
+    try:
+        logger.info(f"🤖 Executando agente Anthropic (modelo: {anthropic_agent_scraper.model})")
+
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(status_code=400, detail="Prompt é obrigatório")
+
+        result = anthropic_agent_scraper.run_agent(request.prompt.strip())
+
+        return AgentResponse(result=result)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Erro ao executor agente Anthropic: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao executar agente: {str(e)}")
 
 # Map Site
