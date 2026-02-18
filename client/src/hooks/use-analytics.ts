@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./use-toast";
+import { apiGet, apiPost } from "@/lib/api";
 
 interface AnalyticsAccount {
   id: string;
@@ -21,9 +22,7 @@ export function useAnalyticsAccounts() {
   return useQuery({
     queryKey: ['analytics-accounts'],
     queryFn: async (): Promise<AccountsResponse> => {
-      const res = await fetch('/api/analytics/accounts');
-      if (!res.ok) throw new Error('Failed to fetch accounts');
-      return res.json();
+      return apiGet('/api/analytics/accounts');
     },
   });
 }
@@ -34,13 +33,7 @@ export function useSelectAccount() {
 
   return useMutation({
     mutationFn: async ({ platform, accountId }: { platform: string; accountId: string }) => {
-      const res = await fetch('/api/analytics/select-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platform, accountId }),
-      });
-      if (!res.ok) throw new Error('Failed to select account');
-      return res.json();
+      return apiPost('/api/analytics/select-account', { platform, accountId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['analytics-accounts'] });
@@ -60,13 +53,7 @@ export function useHideAccount() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch('/api/analytics/hide-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      if (!res.ok) throw new Error('Failed to hide account');
-      return res.json();
+      return apiPost('/api/analytics/hide-account', { id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['analytics-accounts'] });
@@ -82,9 +69,7 @@ export function useMetaOrganic() {
   return useQuery({
     queryKey: ['meta-organic'],
     queryFn: async () => {
-      const res = await fetch('/api/analytics/meta/organic');
-      if (!res.ok) throw new Error('Failed to fetch Meta organic metrics');
-      return res.json();
+      return apiGet('/api/analytics/meta/organic');
     },
   });
 }
@@ -93,9 +78,7 @@ export function useMetaAds() {
   return useQuery({
     queryKey: ['meta-ads'],
     queryFn: async () => {
-      const res = await fetch('/api/analytics/meta/ads');
-      if (!res.ok) throw new Error('Failed to fetch Meta ads metrics');
-      return res.json();
+      return apiGet('/api/analytics/meta/ads');
     },
   });
 }
@@ -104,9 +87,7 @@ export function useGoogleAds() {
   return useQuery({
     queryKey: ['google-ads'],
     queryFn: async () => {
-      const res = await fetch('/api/analytics/google/ads');
-      if (!res.ok) throw new Error('Failed to fetch Google Ads metrics');
-      return res.json();
+      return apiGet('/api/analytics/google/ads');
     },
   });
 }

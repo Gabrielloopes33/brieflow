@@ -3,11 +3,13 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { useClients } from "@/hooks/use-clients";
 import { useToast } from "@/hooks/use-toast";
+import { useCreateKnowledgeItem } from "@/hooks/use-knowledge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { apiPost } from "@/lib/api";
 import {
     Globe,
     Search,
@@ -41,6 +43,7 @@ export function ChatPage() {
     const [selectedClient, setSelectedClient] = useState<string>("");
     const { data: clients } = useClients();
     const { toast } = useToast();
+    const createKnowledgeItem = useCreateKnowledgeItem();
 
     // Scrape state
     const [scrapeUrl, setScrapeUrl] = useState("");
@@ -92,17 +95,12 @@ export function ChatPage() {
         }
 
         try {
-            const res = await fetch(`/api/clients/${selectedClient}/knowledge`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, content, type, source_url: sourceUrl }),
-            });
-
-            if (!res.ok) throw new Error("Failed to save");
-
-            toast({
-                title: "Sucesso",
-                description: "Item salvo na base de conhecimento",
+            await createKnowledgeItem.mutateAsync({
+                clientId: selectedClient,
+                title,
+                content,
+                type,
+                sourceUrl,
             });
         } catch {
             toast({
@@ -118,15 +116,10 @@ export function ChatPage() {
         setScrapeLoading(true);
         setScrapeResult(null);
         try {
-            const res = await fetch("/api/scraper/scrape", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: scrapeUrl, formats: [scrapeFormat] }),
-            });
-            const data = await res.json();
+            const data = await apiPost<ScrapeResult>("/api/scraper/scrape", { url: scrapeUrl, formats: [scrapeFormat] });
             setScrapeResult(data);
-        } catch {
-            setScrapeResult({ url: scrapeUrl, markdown: "Erro ao fazer scraping. Verifique a URL e tente novamente." });
+        } catch (error: any) {
+            setScrapeResult({ url: scrapeUrl, markdown: error.message || "Erro ao fazer scraping. Verifique a URL e tente novamente." });
         } finally {
             setScrapeLoading(false);
         }
@@ -137,12 +130,7 @@ export function ChatPage() {
         setSearchLoading(true);
         setSearchResults([]);
         try {
-            const res = await fetch("/api/scraper/search", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: searchQuery, numResults: parseInt(searchNumResults) }),
-            });
-            const data = await res.json();
+            const data = await apiPost<{ results?: SearchResult[] }>("/api/scraper/search", { query: searchQuery, numResults: parseInt(searchNumResults) });
             setSearchResults(data.results || []);
         } catch {
             setSearchResults([]);
@@ -156,12 +144,7 @@ export function ChatPage() {
         setAgentLoading(true);
         setAgentResult("");
         try {
-            const res = await fetch("/api/scraper/agent", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: agentPrompt }),
-            });
-            const data = await res.json();
+            const data = await apiPost<{ result?: string }>("/api/scraper/agent", { prompt: agentPrompt });
             setAgentResult(data.result || JSON.stringify(data, null, 2));
         } catch {
             setAgentResult("Erro ao executar o agente.");
@@ -175,12 +158,7 @@ export function ChatPage() {
         setMapLoading(true);
         setMapResult([]);
         try {
-            const res = await fetch("/api/scraper/map", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: mapUrl }),
-            });
-            const data = await res.json();
+            const data = await apiPost<{ links?: string[]; urls?: string[] }>("/api/scraper/map", { url: mapUrl });
             setMapResult(data.links || data.urls || []);
         } catch {
             setMapResult([]);
@@ -194,12 +172,7 @@ export function ChatPage() {
         setCrawlLoading(true);
         setCrawlResult([]);
         try {
-            const res = await fetch("/api/scraper/crawl", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: crawlUrl, maxPages: parseInt(crawlMaxPages) }),
-            });
-            const data = await res.json();
+            const data = await apiPost<{ pages?: string[]; urls?: string[] }>("/api/scraper/crawl", { url: crawlUrl, maxPages: parseInt(crawlMaxPages) });
             setCrawlResult(data.pages || data.urls || []);
         } catch {
             setCrawlResult([]);
