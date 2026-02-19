@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.prebuilt
     image: briefflow-app:latest
+    command: node dist/index.cjs
     ports:
       - target: 5000
         published: 5000
