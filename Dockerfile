@@ -7,7 +7,7 @@ RUN apk add --no-cache postgresql-client
 
 # Install dependencies (including dev deps for build)
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .
