@@ -40,7 +40,17 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Apply auth middleware only to protected routes
+// Test endpoint for connectivity debugging
+app.get("/api/test", (req, res) => {
+  res.json({ 
+    message: "Backend is accessible", 
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    cors_origin: process.env.CORS_ORIGIN
+  });
+});
+
+// Apply auth middleware only to protected routes  
 app.use("/api", authMiddleware);
 
 // Swagger UI

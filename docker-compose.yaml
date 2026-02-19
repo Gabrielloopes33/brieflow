@@ -21,6 +21,11 @@ services:
       - SESSION_SECRET=${SESSION_SECRET}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
       - SCRAPER_URL=http://scraper:8000
+      # Supabase Configuration (REQUIRED for authentication)
+      - SUPABASE_URL=${SUPABASE_URL:-https://supa.agenciatouch.com.br}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0._G0caHkMnfr_HyJR9knteSCT0H9q3tDO5pL3AUb2mic}
+      # CORS Configuration for Netlify
+      - CORS_ORIGIN=${CORS_ORIGIN:-https://briefflow.netlify.app,https://brieflow-api.agenciatouch.com.br}
     depends_on:
       postgres:
         condition: service_healthy
