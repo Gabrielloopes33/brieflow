@@ -145,6 +145,38 @@ services:
         max-size: "20m"
         max-file: "5"
 
+  monitoring-init:
+    image: alpine:latest
+    container_name: brielflow-monitoring-init
+    volumes:
+      - ./monitoring:/monitoring-source:ro
+      - prometheus_config:/prometheus-config
+      - grafana_config:/grafana-config
+    command: >
+      sh -c "
+        echo '🔧 Initializing monitoring configs...'
+        cp /monitoring-source/prometheus.yml /prometheus-config/prometheus.yml
+        mkdir -p /grafana-config/dashboards /grafana-config/datasources
+        cp -r /monitoring-source/grafana/dashboards/. /grafana-config/dashboards/
+        cp -r /monitoring-source/grafana/datasources/. /grafana-config/datasources/
+        echo '✅ Monitoring configs initialized successfully'
+      "
+    networks:
+      - brielflow-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   prometheus:
     image: prom/prometheus:latest
     container_name: brielflow-prometheus
@@ -152,7 +184,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_config:/etc/prometheus
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -161,6 +193,9 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
     networks:
       - brielflow-network
+    depends_on:
+      monitoring-init:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:
@@ -187,8 +222,7 @@ services:
       - GF_SERVER_ROOT_URL=${FRONTEND_URL}:3001
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana_config:/etc/grafana/provisioning
     depends_on:
       - prometheus
     networks:
@@ -221,5 +255,9 @@ volumes:
     driver: local
   prometheus_data:
     driver: local
+  prometheus_config:
+    driver: local
   grafana_data:
+    driver: local
+  grafana_config:
     driver: local
