@@ -63,10 +63,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - target: 5432
-        published: 5433
-        mode: host
     networks:
       - brieflow-network
     deploy:
@@ -97,10 +93,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - target: 6379
-        published: 6379
-        mode: host
     volumes:
       - redis_data:/data
     networks:
