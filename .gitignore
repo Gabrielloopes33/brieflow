@@ -8,4 +8,4 @@ vite.config.ts.*
 .env.local
 .env.*.local
 scraper/__pycache__
-scraper/src/**/__pycache__
+scraper/src/**/__pycache__.env
