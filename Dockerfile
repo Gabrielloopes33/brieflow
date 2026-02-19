@@ -2,17 +2,24 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Install system dependencies
 RUN apk add --no-cache postgresql-client
 
+# Install dependencies (including dev deps for build)
 COPY package*.json ./
+RUN npm ci
 
-RUN npm ci --only=production
+# Copy source code
+COPY . .
 
-COPY server ./server
-COPY shared ./shared
-COPY dist ./dist
+# Build the application inside the container
+RUN npm run build
+
+# Prune dev dependencies to keep image smaller (optional but good practice)
+RUN npm prune --production
 
 ENV NODE_ENV=production
+ENV PORT=5000
 
 EXPOSE 5000
 
