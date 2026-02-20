@@ -86,10 +86,10 @@ services:
     networks:
       - briefflow-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-briefflow}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d briefflow"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     logging:
       driver: "json-file"
       options:
