@@ -297,12 +297,12 @@ curl http://localhost/api/health
 ```
 
 ### Acessar Aplicação
-- **Frontend:** `http://seu-dominio.com:8080` ou `http://IP-VPS:8080`
-- **API Health:** `http://seu-dominio.com:8080/api/health`
-- **API Docs:** `http://seu-dominio.com:8080/api-docs` (Swagger UI)
+- **Frontend:** `http://seu-dominio.com:8081` ou `http://IP-VPS:8081`
+- **API Health:** `http://seu-dominio.com:8081/api/health`
+- **API Docs:** `http://seu-dominio.com:8081/api-docs` (Swagger UI)
 - **HTTPS (se configurado):** `https://seu-dominio.com:8443`
 
-**Nota:** Portas usadas no Coolify: `8080` (HTTP) e `8443` (HTTPS) devido a conflito na porta 80 padrão.
+**Nota:** Portas usadas no Coolify: `8081` (HTTP) e `8443` (HTTPS) devido a conflito nas portas 80 e 8080 padrão.
 
 ## 🆘 Suporte
 
