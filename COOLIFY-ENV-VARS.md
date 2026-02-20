@@ -4,6 +4,19 @@
 
 Este documento explica todas as variáveis necessárias para configurar o BriefFlow no Coolify.
 
+## ⚠️ Importante: Variáveis Vite (Frontend)
+
+As variáveis `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_SUPABASE_SERVICE_KEY` são usadas pelo frontend React (Vite) e foram adicionadas ao arquivo `client/.env.production`.
+
+**Estas variáveis são usadas durante o build do frontend** e NÃO precisam ser configuradas no Coolify. Elas estão embutidas no código JavaScript gerado durante o build.
+
+Se precisar atualizar estas variáveis:
+1. Edite o arquivo `client/.env.production`
+2. Faça commit e push para o GitHub
+3. Faça redeploy no Coolify
+
+**Nota:** As variáveis do backend (como `SUPABASE_URL`, `SUPABASE_ANON_KEY`, etc.) ainda precisam ser configuradas no Coolify como "Available at Runtime".
+
 ## 📋 Variáveis OBRIGATÓRIAS
 
 ### 1. DB_NAME
