@@ -132,6 +132,15 @@ Se não estiverem marcadas:
 
 ## 🐛 Troubleshooting
 
+### Erro: "not a directory" no nginx
+
+**Causa:** Coolify criou um diretório onde deveria ser um arquivo (nginx.conf)
+
+**Solução:**
+- Volumes bind mount foram removidos do nginx e app para evitar conflitos
+- Nginx agora usa configuração padrão
+- App usa volumes internos do Docker
+
 ### Variáveis Não Estão Sendo Salvas
 
 **Soluções:**
