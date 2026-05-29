@@ -1,0 +1,571 @@
+version: "3.8"
+
+# ============================================
+# COOLIFY RESTORATION - FULL STACK
+# Supabase (12 serviços) + MinIO (1) + BriefFlow (2)
+# Total: 15 serviços
+# ============================================
+
+services:
+  # ========================================
+  # BRIEFTLOW STACK (2 serviços)
+  # ========================================
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: briefflow-app
+    restart: unless-stopped
+    ports:
+      - "${BRIEFTLOW_PORT:-8081}:5000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-5000}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SCRAPER_API_URL=${SCRAPER_API_URL:-http://localhost:8000}
+    volumes:
+      - briefflow_data:/app/data
+    networks:
+      - supabase-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: briefflow-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - supabase-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================
+  # MINIO STACK (1 serviço)
+  # ========================================
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_BROWSER_REDIRECT_URL=${MINIO_CONSOLE_URL:-http://localhost:9001}
+      - MINIO_SERVER_URL=${MINIO_SERVER_URL:-http://localhost:9000}
+      - MINIO_REGION_NAME=${MINIO_REGION:-us-east-1}
+    volumes:
+      - minio_data:/data
+    networks:
+      - supabase-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================
+  # SUPABASE STACK (12 serviços)
+  # ========================================
+
+  # Supabase Studio - Interface Web
+  studio:
+    image: supabase/studio:2025.06.30-sha-6f5982d
+    container_name: supabase-studio
+    restart: unless-stopped
+    ports:
+      - "${STUDIO_PORT:-3000}:3000"
+    environment:
+      - HOSTNAME=0.0.0.0
+      - DEBUG=next:*
+      - NEXT_PUBLIC_ENABLE_LOGS=true
+      - NEXT_ANALYTICS_BACKEND_PROVIDER=postgres
+      - DEFAULT_ORGANIZATION_NAME=${STUDIO_ORG_NAME:-OrionDesign}
+      - DEFAULT_PROJECT_NAME=${STUDIO_PROJECT_NAME:-SetupOrion}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - STUDIO_PG_META_URL=http://meta:8080
+      - SUPABASE_URL=http://kong:8000
+      - SUPABASE_PUBLIC_URL=${SUPABASE_URL}
+      - LOGFLARE_API_KEY=${LOGFLARE_API_KEY}
+      - LOGFLARE_URL=http://analytics:4000
+      - LOGFLARE_PRIVATE_ACCESS_TOKEN=${LOGFLARE_PRIVATE_ACCESS_TOKEN}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - AUTH_JWT_SECRET=${JWT_SECRET}
+    networks:
+      - supabase-network
+    depends_on:
+      - meta
+      - kong
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Kong - API Gateway
+  kong:
+    image: kong:2.8.1
+    container_name: supabase-kong
+    restart: unless-stopped
+    entrypoint: bash -c 'eval "echo "$$(cat ~/temp.yml)\"" > ~/kong.yml && /docker-entrypoint.sh kong docker-start'
+    ports:
+      - "${KONG_PORT:-8000}:8000"
+    volumes:
+      - supabase_api:/home/kong/temp.yml:ro
+    networks:
+      - supabase-network
+    environment:
+      - DASHBOARD_USERNAME=${KONG_USERNAME}
+      - DASHBOARD_PASSWORD=${KONG_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - KONG_DATABASE=off
+      - KONG_DECLARATIVE_CONFIG=/home/kong/kong.yml
+      - KONG_DNS_ORDER=LAST,A,CNAME
+      - KONG_PLUGINS=request-transformer,cors,key-auth,acl,basic-auth
+      - KONG_NGINX_PROXY_PROXY_BUFFER_SIZE=160k
+      - KONG_NGINX_PROXY_PROXY_BUFFERS=64 160k
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Auth - GoTrue
+  auth:
+    image: supabase/gotrue:v2.176.1
+    container_name: supabase-auth
+    restart: unless-stopped
+    networks:
+      - supabase-network
+    environment:
+      - GOTRUE_API_HOST=0.0.0.0
+      - GOTRUE_API_PORT=9999
+      - API_EXTERNAL_URL=${SUPABASE_URL}
+      - GOTRUE_DB_DRIVER=postgres
+      - GOTRUE_DB_DATABASE_URL=postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      - GOTRUE_SITE_URL=${SUPABASE_URL}
+      - GOTRUE_URI_ALLOW_LIST=
+      - GOTRUE_DISABLE_SIGNUP=false
+      - GOTRUE_JWT_ADMIN_ROLES=service_role
+      - GOTRUE_JWT_AUD=authenticated
+      - GOTRUE_JWT_DEFAULT_GROUP_NAME=authenticated
+      - GOTRUE_JWT_EXP=31536000
+      - GOTRUE_JWT_SECRET=${JWT_SECRET}
+      - GOTRUE_EXTERNAL_EMAIL_ENABLED=false
+      - GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED=false
+      - GOTRUE_MAILER_URLPATHS_INVITE=/auth/v1/verify
+      - GOTRUE_MAILER_URLPATHS_CONFIRMATION=/auth/v1/verify
+      - GOTRUE_MAILER_URLPATHS_RECOVERY=/auth/v1/verify
+      - GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE=/auth/v1/verify
+      - GOTRUE_EXTERNAL_PHONE_ENABLED=false
+      - GOTRUE_SMS_AUTOCONFIRM=false
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Rest - PostgREST
+  rest:
+    image: postgrest/postgrest:v12.2.12
+    container_name: supabase-rest
+    restart: unless-stopped
+    command: "postgrest"
+    networks:
+      - supabase-network
+    environment:
+      - PGRST_DB_URI=postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      - PGRST_DB_SCHEMAS=public,storage,graphql_public
+      - PGRST_DB_ANON_ROLE=anon
+      - PGRST_JWT_SECRET=${JWT_SECRET}
+      - PGRST_APP_SETTINGS_JWT_SECRET=${JWT_SECRET}
+      - PGRST_APP_SETTINGS_JWT_EXP=31536000
+      - PGRST_DB_USE_LEGACY_GUCS="false"
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Realtime - WebSocket
+  realtime:
+    image: supabase/realtime:v2.34.47
+    container_name: supabase-realtime
+    restart: unless-stopped
+    networks:
+      - supabase-network
+    environment:
+      - PORT=4000
+      - API_JWT_SECRET=${JWT_SECRET}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - APP_NAME=realtime
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=supabase_admin
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=postgres
+      - DB_AFTER_CONNECT_QUERY='SET search_path TO _realtime'
+      - DB_ENC_KEY=supabaserealtime
+      - ERL_AFLAGS=-proto_dist inet_tcp
+      - DNS_NODES=""
+      - RLIMIT_NOFILE=10000
+      - SEED_SELF_HOST=true
+      - RUN_JANITOR=true
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Storage - Storage API
+  storage:
+    image: supabase/storage-api:v1.22.17
+    container_name: supabase-storage
+    restart: unless-stopped
+    volumes:
+      - supabase_storage:/var/lib/storage
+    networks:
+      - supabase-network
+    environment:
+      - ANON_KEY=${SUPABASE_ANON_KEY}
+      - SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - POSTGREST_URL=http://rest:3000
+      - PGRST_JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=postgres://supabase_storage_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      - FILE_SIZE_LIMIT=52428800
+      - STORAGE_BACKEND=s3
+      - GLOBAL_S3_BUCKET=${MINIO_BUCKET:-supabase}
+      - GLOBAL_S3_ENDPOINT=${MINIO_SERVER_URL:-http://minio:9000}
+      - GLOBAL_S3_PROTOCOL=http
+      - GLOBAL_S3_FORCE_PATH_STYLE=true
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${MINIO_REGION:-us-east-1}
+      - FILE_STORAGE_BACKEND_PATH=/var/lib/storage
+      - ENABLE_IMAGE_TRANSFORMATION="true"
+      - IMGPROXY_URL=http://imgproxy:5001
+      - TENANT_ID=stub
+      - REGION=${MINIO_REGION:-us-east-1}
+    depends_on:
+      - db
+      - rest
+      - imgproxy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Imgproxy - Image Processing
+  imgproxy:
+    image: darthsim/imgproxy:v3.8.0
+    container_name: supabase-imgproxy
+    restart: unless-stopped
+    volumes:
+      - supabase_storage:/var/lib/storage
+    networks:
+      - supabase-network
+    environment:
+      - IMGPROXY_BIND=:5001
+      - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/
+      - IMGPROXY_USE_ETAG=true
+      - IMGPROXY_ENABLE_WEBP_DETECTION=true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Meta - Admin API
+  meta:
+    image: supabase/postgres-meta:v0.89.3
+    container_name: supabase-meta
+    restart: unless-stopped
+    networks:
+      - supabase-network
+    environment:
+      - PG_META_PORT=8080
+      - PG_META_DB_HOST=db
+      - PG_META_DB_PORT=5432
+      - PG_META_DB_NAME=postgres
+      - PG_META_DB_USER=supabase_admin
+      - PG_META_DB_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Functions - Edge Runtime
+  functions:
+    image: supabase/edge-runtime:v1.67.4
+    container_name: supabase-functions
+    restart: unless-stopped
+    command:
+      - start
+      - --main-service
+      - /home/deno/functions/main
+    volumes:
+      - supabase_functions:/home/deno/functions
+    networks:
+      - supabase-network
+    environment:
+      - VERIFY_JWT="false"
+      - JWT_SECRET=${JWT_SECRET}
+      - SUPABASE_URL=http://kong:8000
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_DB_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+    depends_on:
+      - db
+      - kong
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Analytics - Logflare
+  analytics:
+    image: supabase/logflare:1.14.2
+    container_name: supabase-analytics
+    restart: unless-stopped
+    networks:
+      - supabase-network
+    environment:
+      - DB_USERNAME=supabase_admin
+      - DB_DATABASE=_supabase
+      - DB_HOSTNAME=db
+      - DB_PORT=5432
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_SCHEMA=_analytics
+      - POSTGRES_BACKEND_URL=postgresql://supabase_admin:${POSTGRES_PASSWORD}@db:5432/_supabase
+      - POSTGRES_BACKEND_SCHEMA=_analytics
+      - LOGFLARE_NODE_HOST=127.0.0.1
+      - LOGFLARE_API_KEY=${LOGFLARE_API_KEY}
+      - LOGFLARE_PUBLIC_ACCESS_TOKEN=${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+      - LOGFLARE_PRIVATE_ACCESS_TOKEN=${LOGFLARE_PRIVATE_ACCESS_TOKEN}
+      - LOGFLARE_SINGLE_TENANT=true
+      - LOGFLARE_SUPABASE_MODE=true
+      - LOGFLARE_MIN_CLUSTER_SIZE=1
+      - LOGFLARE_FEATURE_FLAG_OVERRIDE=multibackend=true
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Database - PostgreSQL
+  db:
+    image: supabase/postgres:15.8.1.060
+    container_name: supabase-db
+    restart: unless-stopped
+    command:
+      - postgres
+      - '-c'
+      - config_file=/etc/postgresql/postgresql.conf
+      - '-c'
+      - log_min_messages=fatal
+    volumes:
+      - supabase_db_init_1:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:ro
+      - supabase_db_init_2:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:ro
+      - supabase_db_init_3:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
+      - supabase_db_init_4:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:ro
+      - supabase_db_data:/var/lib/postgresql/data
+      - supabase_db_init_5:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:ro
+      - supabase_db_init_6:/docker-entrypoint-initdb.d/migrations/99-logs.sql:ro
+      - supabase_db_init_7:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:ro
+    networks:
+      - supabase-network
+    environment:
+      - POSTGRES_HOST=/var/run/postgresql
+      - PGPORT=5432
+      - POSTGRES_PORT=5432
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=postgres
+      - PGDATABASE=postgres
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXP=31536000
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Vector - Log Collector
+  vector:
+    image: timberio/vector:0.28.1-alpine
+    container_name: supabase-vector
+    restart: unless-stopped
+    command:
+      - '--config'
+      - etc/vector/vector.yml
+    volumes:
+      - supabase_logs:/etc/vector/vector.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - supabase-network
+    environment:
+      - LOGFLARE_API_KEY=${LOGFLARE_API_KEY}
+      - LOGFLARE_PUBLIC_ACCESS_TOKEN=${LOGFLARE_PUBLIC_ACCESS_TOKEN}
+    depends_on:
+      - analytics
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Supabase Supavisor - PgBouncer
+  supavisor:
+    image: supabase/supavisor:2.5.1
+    container_name: supabase-supavisor
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - /app/bin/migrate && /app/bin/supavisor eval "$$(cat /etc/pooler/pooler.exs)" && /app/bin/server
+    volumes:
+      - supabase_pooler:/etc/pooler/pooler.exs:ro
+    networks:
+      - supabase-network
+    environment:
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_URL=ecto://supabase_admin:${POSTGRES_PASSWORD}@db:5432/_supabase
+      - CLUSTER_POSTGRES=true
+      - API_JWT_SECRET=${JWT_SECRET}
+      - METRICS_JWT_SECRET=${JWT_SECRET}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - VAULT_ENC_KEY=${VAULT_ENC_KEY}
+      - REGION=local
+      - ERL_AFLAGS=-proto_dist inet_tcp
+      - POOLER_TENANT_ID=1
+      - POOLER_DEFAULT_POOL_SIZE=20
+      - POOLER_MAX_CLIENT_CONN=100
+      - POOLER_POOL_MODE=transaction
+      - DB_POOL_SIZE=5
+      - PORT=4000
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ========================================
+# VOLUMES
+# ========================================
+
+volumes:
+  # BRIEFTLOW
+  briefflow_data:
+    driver: local
+  redis_data:
+    driver: local
+
+  # MINIO
+  minio_data:
+    driver: local
+
+  # SUPABASE
+  supabase_db_data:
+    driver: local
+  supabase_db_config:
+    driver: local
+  supabase_storage:
+    driver: local
+  supabase_functions:
+    driver: local
+  supabase_api:
+    driver: local
+  supabase_pooler:
+    driver: local
+  supabase_logs:
+    driver: local
+
+  # Arquivos de init do Supabase
+  supabase_db_init_1:
+    driver: local
+  supabase_db_init_2:
+    driver: local
+  supabase_db_init_3:
+    driver: local
+  supabase_db_init_4:
+    driver: local
+  supabase_db_init_5:
+    driver: local
+  supabase_db_init_6:
+    driver: local
+  supabase_db_init_7:
+    driver: local
+
+# ========================================
+# NETWORKS
+# ========================================
+
+networks:
+  supabase-network:
+    driver: bridge
